@@ -20,34 +20,34 @@ public class Main {
 
         BufferedImage image = new BufferedImage(300, 300, BufferedImage.TYPE_INT_ARGB);
 
-        /* 중앙에 초록색 사각형을 만듬 */
+        /* 중앙에 초록색 사각형을 만듦 */
         Graphics g = image.getGraphics();
         g.setColor(Color.GREEN);
         g.fillRect(0, 0, 300, 300);
 
         BufferedImage image2 = new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB);
 
-        /* 중앙에 초록색 사각형을 만듬 */
+        /* 중앙에 파란색 사각형을 만듦 */
         Graphics g2 = image2.getGraphics();
         g2.setColor(Color.BLUE);
         g2.fillRect(0, 0, 100, 100);
 
         /* 스프라이트 만들기 */
-        ObjectSprite sprite =new ObjectSprite(image);
-        sprite.registerEffect(fadeIn, 0, 300);
-        sprite.registerEffect(fadeOut, 0, 300);
+        ObjectSprite sprite = new ObjectSprite(image);
+        sprite.registerEffect(fadeIn, 0, 100);
+        sprite.registerEffect(fadeOut, 0, 100);
         sprite.setPoint(100, 100);
 
-        ObjectSprite sprite2 =new ObjectSprite(image2);
-        sprite2.registerEffect(fadeIn, 0, 1200);
-        sprite2.registerEffect(fadeOut, 0, 300);
+        ObjectSprite sprite2 = new ObjectSprite(image2);
+        sprite2.registerEffect(fadeIn, 0, 200);
+        sprite2.registerEffect(fadeOut, 0, 100);
         sprite2.setPoint(200, 200);
 
         palette.addSprite(sprite);
         palette.addSprite(sprite2);
 
         palette.startRender();
-        palette.setVisible(true);
+        //palette.setVisible(true);
         //palette.stopRender();
 
         sprite.enableEffect(fadeIn);

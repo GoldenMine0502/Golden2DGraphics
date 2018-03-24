@@ -14,14 +14,30 @@ public class UtilityFade {
         }
     }
 
+    /*
+    AAAAAAAA / RRRRRRRR / GGGGGGGG / BBBBBBBB
+     */
+
+    public static int getAlphaPlus(int alpha, int percent) {
+        int cal = (int) Math.round((alpha-(alpha - alpha/100D*percent)));
+
+        return cal >= 256 ? 255 : cal;
+    }
+
     public static Color getAlphaPlus(Color first, int percent) {
         double alpha = first.getAlpha();
-        //System.out.println((int)(alpha-(int)(alpha - alpha/100D*percent)));
-        return new Color(first.getRed(), first.getGreen(), first.getBlue(),(int)(alpha-(int)(alpha - alpha/100D*percent)));
+        int cal = (int) Math.round((alpha-(alpha - alpha/10000D*percent)));
+        //System.out.println();
+        return new Color(first.getRed(), first.getGreen(), first.getBlue(),cal>=256 ? 255 : cal);
     }
 
     public static Color getAlphaMinus(Color first, int percent) {
         double alpha = first.getAlpha();
-        return new Color(first.getRed(), first.getGreen(), first.getBlue(),(int)(alpha - alpha/100D*percent));
+        int cal = (int)(alpha - alpha/10000D*percent);
+        return new Color(first.getRed(), first.getGreen(), first.getBlue(),cal>=256 ? 255 : cal);
+    }
+
+    private static int calculateAlpha(int alpha, int percent) {
+        return (int) Math.round(alpha - alpha/10000D*percent);
     }
 }
