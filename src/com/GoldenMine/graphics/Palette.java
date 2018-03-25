@@ -167,6 +167,10 @@ public class Palette extends JFrame {
         }
     }
 
+    public void addSprite(ObjectSprite objectSprite) {
+        addSprite(objectSprite, false);
+    }
+
     public void addSprite(ObjectSprite objSprite, boolean transparent) {
         sprites.add(objSprite);
 
