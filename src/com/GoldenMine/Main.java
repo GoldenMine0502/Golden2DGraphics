@@ -1,5 +1,8 @@
 package com.GoldenMine;
 
+import com.GoldenMine.actions.ActionLeftFlyAndCome;
+import com.GoldenMine.actions.ActionRightFlyAndAway;
+import com.GoldenMine.actions.IAction;
 import com.GoldenMine.effects.EffectFadeIn;
 import com.GoldenMine.effects.EffectFadeOut;
 import com.GoldenMine.effects.IEffect;
@@ -17,6 +20,8 @@ public class Main {
         IEffect fadeIn = new EffectFadeIn();
         IEffect fadeOut = new EffectFadeOut();
 
+        IAction leftIn = new ActionLeftFlyAndCome();
+        IAction rightOut = new ActionRightFlyAndAway();
 
         BufferedImage image = new BufferedImage(300, 300, BufferedImage.TYPE_INT_ARGB);
 
@@ -34,39 +39,43 @@ public class Main {
 
         /* 스프라이트 만들기 */
         ObjectSprite sprite = new ObjectSprite(image);
-        sprite.registerEffect(fadeIn, 0, 100);
-        sprite.registerEffect(fadeOut, 0, 100);
+        sprite.registerEffect(fadeIn, 100, 200);
+        sprite.registerEffect(fadeOut, 0, 200);
         sprite.setPoint(100, 100);
+        sprite.registerAction(leftIn, 0, 300);
+        sprite.registerAction(rightOut, 0, 300);
 
         ObjectSprite sprite2 = new ObjectSprite(image2);
-        sprite2.registerEffect(fadeIn, 0, 200);
-        sprite2.registerEffect(fadeOut, 0, 100);
+        sprite2.registerEffect(fadeIn, 0, 600);
+        sprite2.registerEffect(fadeOut, 0, 300);
         sprite2.setPoint(200, 200);
 
-        palette.addSprite(sprite);
-        palette.addSprite(sprite2);
+        palette.addSprite(sprite, true);
+        palette.addSprite(sprite2, true);
 
         palette.startRender();
         //palette.setVisible(true);
         //palette.stopRender();
 
         sprite.enableEffect(fadeIn);
-
+        sprite.enableAction(leftIn);
         sprite2.enableEffect(fadeIn);
         try {
-            Thread.sleep(6000L);
+            Thread.sleep(5000L);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         sprite.enableEffect(fadeOut);
+        sprite.enableAction(rightOut);
         try {
-            Thread.sleep(6000L);
+            Thread.sleep(5000L);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         sprite.enableEffect(fadeIn);
+        sprite.enableAction(leftIn);
         try {
-            Thread.sleep(6000L);
+            Thread.sleep(5000L);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

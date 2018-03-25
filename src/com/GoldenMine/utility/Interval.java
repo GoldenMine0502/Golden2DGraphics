@@ -50,12 +50,13 @@ public class Interval {
         return wait;
     }
 
-    public int getWaitPercent() {
-        return (int) Math.round((double)waitTick/wait*10000);
+    /* range=0~10000 */
+    public double getWaitPercent() {
+        return (double)waitTick/wait*10000;
     }
 
-    public int getIntervalPercent() {
-        return (int) Math.round((double)intervalTick/interval*10000);
+    public double getIntervalPercent() {
+        return (double)intervalTick/interval*10000;
     }
 
     public boolean getCompletedWait() {

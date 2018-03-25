@@ -24,20 +24,20 @@ public class UtilityFade {
         return cal >= 256 ? 255 : cal;
     }
 
-    public static Color getAlphaPlus(Color first, int percent) {
+    public static Color getAlphaPlus(Color first, double percent) {
         double alpha = first.getAlpha();
         int cal = (int) Math.round((alpha-(alpha - alpha/10000D*percent)));
         //System.out.println();
         return new Color(first.getRed(), first.getGreen(), first.getBlue(),cal>=256 ? 255 : cal);
     }
 
-    public static Color getAlphaMinus(Color first, int percent) {
+    public static Color getAlphaMinus(Color first, double percent) {
         double alpha = first.getAlpha();
         int cal = (int)(alpha - alpha/10000D*percent);
         return new Color(first.getRed(), first.getGreen(), first.getBlue(),cal>=256 ? 255 : cal);
     }
 
-    private static int calculateAlpha(int alpha, int percent) {
+    private static int calculateAlpha(int alpha, double percent) {
         return (int) Math.round(alpha - alpha/10000D*percent);
     }
 }

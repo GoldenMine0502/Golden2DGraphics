@@ -1,5 +1,6 @@
 package com.GoldenMine.graphics;
 
+import com.GoldenMine.actions.IAction;
 import com.GoldenMine.effects.IEffect;
 import com.GoldenMine.events.IEvent;
 import com.GoldenMine.utility.Interval;
@@ -15,7 +16,13 @@ public class ObjectSprite {
     private HashMap<IEvent, HashMap<IEffect, Interval>> eventEffects = new HashMap<>();
     private HashMap<IEffect, Interval> effects = new HashMap<>();
 
+    private HashMap<IEvent, HashMap<IEffect, Interval>> eventActions = new HashMap<>();
+    private HashMap<IAction, Interval> actions = new HashMap<>();
+
+
     HashMap<IEffect, Interval> enabledEffects = new HashMap<>();
+
+    HashMap<IAction, Interval> enabledActions = new HashMap<>();
 
     public ObjectSprite(BufferedImage image) {
         this.original = image;
@@ -40,6 +47,31 @@ public class ObjectSprite {
         point.setY((y+y2)/2);
     }
 
+
+    public void registerEffect(IEffect effect, int wait, int interval) {
+        effects.put(effect, new Interval(wait, interval));
+    }
+
+    public void registerAction(IAction action, int wait, int interval) {
+        actions.put(action, new Interval(wait, interval));
+    }
+
+    public void enableEffect(IEffect effect) {
+        Interval interval = effects.get(effect);
+
+        enabledEffects.put(effect, new Interval(interval.getWait(), interval.getInterval()));
+    }
+
+    public void enableAction(IAction effect) {
+        Interval interval = actions.get(effect);
+
+        enabledActions.put(effect, new Interval(interval.getWait(), interval.getInterval()));
+    }
+
+
+
+
+
     public void registerEffect(IEvent event, IEffect effect, int wait, int interval) {
 
         if(!eventEffects.containsKey(event)) {
@@ -48,21 +80,12 @@ public class ObjectSprite {
         eventEffects.get(event).put(effect, new Interval(wait, interval));
     }
 
-    public void registerEffect(IEffect effect, int wait, int interval) {
-        effects.put(effect, new Interval(wait, interval));
+    public void enableEventEffects(IEvent event) {
+        enabledEffects.putAll(eventEffects.get(event));
     }
 
     public void registerEvent(IEvent event) {
         eventEffects.put(event, new HashMap<>());
     }
 
-    public void enableEventEffects(IEvent event) {
-        enabledEffects.putAll(eventEffects.get(event));
-    }
-
-    public void enableEffect(IEffect effect) {
-        Interval interval = effects.get(effect);
-
-        enabledEffects.put(effect, new Interval(interval.getWait(), interval.getInterval()));
-    }
 }

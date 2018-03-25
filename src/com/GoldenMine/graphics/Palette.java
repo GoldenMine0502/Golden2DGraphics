@@ -1,5 +1,6 @@
 package com.GoldenMine.graphics;
 
+import com.GoldenMine.actions.IAction;
 import com.GoldenMine.effects.IEffect;
 import com.GoldenMine.thread.threadAPI.APISingleThread;
 import com.GoldenMine.thread.threadAPI.APIThreadHandler;
@@ -26,6 +27,8 @@ public class Palette extends JFrame {
 
     List<ObjectSprite> sprites = new ArrayList<>();
     HashMap<ObjectSprite, BufferedImage> spriteImages = new HashMap<>();
+    HashMap<ObjectSprite, Point> spritePoints = new HashMap<>();
+
 
     APISingleThread singleThread;
 
@@ -51,14 +54,14 @@ public class Palette extends JFrame {
                     //이벤트에서 지난 tick을 계산한다.
 
                     HashMap<IEffect, Interval> effects = sprite.enabledEffects;
-                    List<IEffect> removing = new ArrayList<>();
+                    List<IEffect> removingEffects = new ArrayList<>();
 
                     /* 이미지 이벤트에 따라 수정 */
                     for(IEffect effect : effects.keySet()) {
                         Interval interval = effects.get(effect);
                         if(interval.getCompletedWait()) {
                             if(interval.addTick()) {
-                                removing.add(effect);
+                                removingEffects.add(effect);
                             } else {
                                 BufferedImage img = spriteImages.get(sprite);
                                 effect.editImage(sprite.original, img, img.getGraphics(), interval.getIntervalPercent());
@@ -69,16 +72,40 @@ public class Palette extends JFrame {
                         }
                     }
 
+                    HashMap<IAction, Interval> actions = sprite.enabledActions;
+                    List<IAction> removingActions = new ArrayList<>();
+
+                    /* 이미지 액션에 따라 위치 수정 */
+                    for(IAction action : actions.keySet()) {
+                        Interval interval = actions.get(action);
+                        if(interval.getCompletedWait()) {
+                            if(interval.addTick()) {
+                                removingActions.add(action);
+                            } else {
+                                spritePoints.put(sprite, action.getNextPosition(size, sprite.point, sprite.original, interval.getIntervalPercent()));
+                            }
+                        } else {
+                            interval.addWait();
+                        }
+                    }
+
                     /* 완료된 이펙트 제거 */
-                    for(IEffect effect : removing) {
+                    for(IEffect effect : removingEffects) {
                         effects.remove(effect);
+                    }
+
+                    /* 완료된 액션 제거 */
+                    for(IAction action : removingActions) {
+                        actions.remove(action);
                     }
                 }
 
                 /* dispose */
                 bufferGraphic.clearRect(0,0,size.getXInt(), size.getYInt());
                 for(ObjectSprite sprite : sprites) {
-                    bufferGraphic.drawImage(spriteImages.get(sprite), sprite.point.getXInt(), sprite.point.getYInt(), null);
+                    Point spritePoint = spritePoints.get(sprite);
+
+                    bufferGraphic.drawImage(spriteImages.get(sprite), spritePoint.getXInt(), spritePoint.getYInt(), null);
                 }
 
                 /* copy */
@@ -140,13 +167,17 @@ public class Palette extends JFrame {
         }
     }
 
-    public void addSprite(ObjectSprite objSprite) {
+    public void addSprite(ObjectSprite objSprite, boolean transparent) {
         sprites.add(objSprite);
 
         BufferedImage img = new BufferedImage(objSprite.original.getWidth(), objSprite.original.getHeight(), BufferedImage.TYPE_INT_ARGB);
-        img.getGraphics().drawImage(objSprite.original, 0, 0, null);
-
+        if(transparent) {
+            img.getGraphics().clearRect(0, 0, objSprite.original.getWidth(), objSprite.original.getHeight());
+        } else {
+            img.getGraphics().drawImage(objSprite.original, 0, 0, null);
+        }
         spriteImages.put(objSprite, img);
+        spritePoints.put(objSprite, new Point(objSprite.point.getX(), objSprite.point.getY()));
     }
 
     public void startRender() {
