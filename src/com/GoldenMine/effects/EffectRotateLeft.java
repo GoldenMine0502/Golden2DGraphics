@@ -4,25 +4,9 @@ import com.GoldenMine.utility.Point;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 
-public class EffectRotateRight implements IEffect{
-    public static void main(String[] args) {
-        BufferedImage image = new BufferedImage(500, 500, BufferedImage.TYPE_INT_ARGB);
-
-        EffectRotateRight r = new EffectRotateRight();
-        Point p1 = new Point(500, 500);
-        Point p2 = new Point(0, 0);
-
-        long start = System.currentTimeMillis();
-        for(int i = 0; i < 100000; i++) {
-            image.getGraphics().drawImage(r.editImage(p1, p2, image, image, image.getGraphics(), 5000), 0, 0, null);
-        }
-        System.out.println(System.currentTimeMillis()-start);
-        //editImage(new Point(500, 500), new Point(0, 0), new )
-    }
-
+public class EffectRotateLeft implements IEffect{
     @Override
     public int getFPS() {
         return 0;
@@ -40,13 +24,14 @@ public class EffectRotateRight implements IEffect{
 
             AffineTransform tx = new AffineTransform();
             //System.out.println(percent/10000D*360D);
-            tx.rotate(Math.toRadians(percent/10000D*360D), spritePos.getXInt() + original.getWidth() / 2, spritePos.getYInt() + original.getHeight() / 2);
+            tx.rotate(Math.toRadians(-percent/10000D*360D), spritePos.getXInt() + original.getWidth() / 2, spritePos.getYInt() + original.getHeight() / 2);
+            graphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                    RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             //AffineTransformOp op = new AffineTransformOp(tx,
             //        AffineTransformOp.TYPE_BILINEAR);
             graphics2D.setTransform(tx);
-
         }
-
+        //System.out.println(percent + ", " + percent/10000D*360D);
 
         //System.out.println("a");
 

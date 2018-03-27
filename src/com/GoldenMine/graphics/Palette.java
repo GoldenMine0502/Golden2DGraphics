@@ -29,7 +29,7 @@ public class Palette extends JFrame {
     //int nextBufferPoint = 0;
 
     List<ObjectSprite> sprites = new ArrayList<>();
-    HashMap<ObjectSprite, List<BufferedImage>> spriteImages = new HashMap<>();
+    HashMap<ObjectSprite, List<Pair<BufferedImage, Graphics2D>>> spriteImages = new HashMap<>();
     HashMap<ObjectSprite, Point> spritePoints = new HashMap<>();
     //List<IEvent> events = new ArrayList<IEvent>();
 
@@ -56,15 +56,21 @@ public class Palette extends JFrame {
             @Override
             public void onThreadExecute() throws InterruptedException {
                 /* rendering */
-                Graphics bufferGraphic = buffer.createGraphics();
+                Graphics bufferGraphic = buffer.getGraphics();
                 bufferGraphic.clearRect(0, 0, size.getXInt(), size.getYInt());
-
+                //bufferGraphic.fillRect(0,0,size.getXInt(), size.getYInt());
                 for (ObjectSprite sprite : sprites) {
+
                     List<Pair<IEffect, Interval>> effects = sprite.enabledEffects;
                     List<Pair<IAction, Interval>> actions = sprite.enabledActions;
 
-                    List<BufferedImage> image = spriteImages.get(sprite);
-                    BufferedImage img = image.get(sprite.getCurrentImagePosition());
+                    List<Pair<BufferedImage, Graphics2D>> imageData = spriteImages.get(sprite);
+
+                    Pair<BufferedImage, Graphics2D> imagePair = imageData.get(sprite.getCurrentImagePosition());
+
+                    BufferedImage img = imagePair.getKey();
+
+                    //Graphics bufferGraphicInternal = imagePair.getValue();
 
                     /* 이펙트 적용 */
                     for (int i = 0; i < effects.size(); i++) {
@@ -77,12 +83,18 @@ public class Palette extends JFrame {
                         if (interval.getCompletedWait()) {
                             //틱 계산, 시간이 다 되었으면
                             if (interval.addTick()) {
+                                //Graphics g = img.getGraphics();
+
+                                //g.drawImage(effect.editImage(size, sprite.getPosition(), sprite.getCurrentImage(), img, g, interval.getIntervalPercent()), 0, 0, null);
+
                                 //제거
                                 effects.remove(i);
                                 i--;
                             } else {
                                 // 안끝났으면 이펙트 효과 적용
-                                image.set(sprite.getCurrentImagePosition(), effect.editImage(sprite.getCurrentImage(), img, bufferGraphic, interval.getIntervalPercent()));
+
+
+                                imageData.set(sprite.getCurrentImagePosition(), new Pair<>(effect.editImage(size, sprite.getPosition(), sprite.getCurrentImage(), img, imagePair.getValue(), interval.getIntervalPercent()), imagePair.getValue()));
 
                             }
                         } else {
@@ -114,7 +126,7 @@ public class Palette extends JFrame {
 
                     Point spritePoint = spritePoints.get(sprite);
 
-                    bufferGraphic.drawImage(spriteImages.get(sprite).get(sprite.getCurrentImagePosition()), spritePoint.getXInt(), spritePoint.getYInt(), null);
+                    imagePair.getValue().drawImage(spriteImages.get(sprite).get(sprite.getCurrentImagePosition()).getKey(), spritePoint.getXInt(), spritePoint.getYInt(), null);
                     //스프라이트의 활성화된 이벤트를 얻고
                     //이벤트에서 지난 tick을 계산한다.
                     /*
@@ -212,11 +224,15 @@ public class Palette extends JFrame {
 
     }
 
+    public void writeImage(ObjectSprite sprite) {
+
+    }
+
     @Override
     public void paint(Graphics g) {
         super.paint(g);
 
-        g.drawImage(buffer, 0, 0, null);
+        //g.drawImage(buffer, 0, 0, null);
     }
 
     public void updateRender() {
@@ -241,19 +257,21 @@ public class Palette extends JFrame {
 
         /* copy all of original images */
         List<BufferedImage> originalImgs = objSprite.getImages();
-        List<BufferedImage> imgs = new LinkedList<>();
+        List<Pair<BufferedImage, Graphics2D>> imgs = new LinkedList<>();
 
         for(int i = 0; i < originalImgs.size(); i++) {
             BufferedImage originalImg = originalImgs.get(i);
 
+            Graphics2D g2d = buffer.createGraphics();
+
             BufferedImage img = new BufferedImage(originalImg.getWidth(), originalImg.getHeight(), BufferedImage.TYPE_INT_ARGB);
+            img.getGraphics().drawImage(objSprite.getCurrentImage(), 0, 0, null);
             if(transparent) {
-                img.getGraphics().clearRect(0, 0, objSprite.getCurrentImage().getWidth(), objSprite.getCurrentImage().getHeight());
-            } else {
-                img.getGraphics().drawImage(objSprite.getCurrentImage(), 0, 0, null);
+                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0));
+                //img.getGraphics().clearRect(0, 0, objSprite.getCurrentImage().getWidth(), objSprite.getCurrentImage().getHeight());
             }
 
-            imgs.add(img);
+            imgs.add(new Pair<>(img, g2d));
         }
         spriteImages.put(objSprite, imgs);
         spritePoints.put(objSprite, new Point(objSprite.getPosition().getX(), objSprite.getPosition().getY()));

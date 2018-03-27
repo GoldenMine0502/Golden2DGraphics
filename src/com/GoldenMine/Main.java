@@ -4,10 +4,7 @@ import com.GoldenMine.actions.ActionLeftFlyAndCome;
 import com.GoldenMine.actions.ActionRightFlyAndAway;
 import com.GoldenMine.actions.ActionTopFlyAndCome;
 import com.GoldenMine.actions.IAction;
-import com.GoldenMine.effects.EffectFadeIn;
-import com.GoldenMine.effects.EffectFadeOut;
-import com.GoldenMine.effects.EffectRotateRight;
-import com.GoldenMine.effects.IEffect;
+import com.GoldenMine.effects.*;
 import com.GoldenMine.graphics.ObjectSprite;
 import com.GoldenMine.graphics.Palette;
 import com.GoldenMine.utility.Point;
@@ -66,7 +63,7 @@ public class Main {
         IEffect fadeIn = new EffectFadeIn();
         IEffect fadeOut = new EffectFadeOut();
 
-        IEffect rotate = new EffectRotateRight();
+        IEffect rotate = new EffectRotateLeft();
 
         IAction leftIn = new ActionLeftFlyAndCome();
         IAction rightOut = new ActionRightFlyAndAway();
@@ -87,6 +84,15 @@ public class Main {
         g2.setColor(Color.BLUE);
         g2.fillRect(0, 0, 100, 100);
 
+
+        BufferedImage image3 = new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB);
+
+        /* 중앙에 파란색 사각형을 만듦 */
+        Graphics g3 = image3.getGraphics();
+        g3.setColor(Color.BLUE);
+        g3.fillRect(0, 0, 100, 100);
+
+
         /* 스프라이트 만들기 */
         ObjectSprite sprite = new ObjectSprite(palette, image);
         sprite.registerEffect(fadeIn, 40, 35);
@@ -99,17 +105,26 @@ public class Main {
         sprite2.registerEffect(fadeIn, 0, 1200);
         sprite2.registerEffect(fadeOut, 0, 1200);
         sprite2.setPoint(200, 200);
-        sprite2.registerEffect(rotate, 0, 60);
+        sprite2.registerEffect(rotate, 0, 600);
+
+        ObjectSprite sprite3 = new ObjectSprite(palette, image3);
+        sprite3.registerEffect(fadeIn, 0, 1200);
+        sprite3.registerEffect(fadeOut, 0, 1200);
+        sprite3.setPoint(300, 300);
+        sprite3.registerEffect(rotate, 0, 120);
+
 
         palette.addSprite(sprite, true);
         palette.addSprite(sprite2, false);
+        //palette.addSprite(sprite3, false);
 
         palette.startRender();
         //palette.stopRender();
 
             sprite.enableEffect(fadeIn);
             sprite.enableAction(leftIn);
-            sprite2.enableEffect(rotate);
+        sprite2.enableEffect(rotate);
+        sprite3.enableEffect(rotate);
             //sprite2.enableEffect(fadeIn);
             try {
                 Thread.sleep(5000L);
@@ -117,7 +132,8 @@ public class Main {
                 e.printStackTrace();
             }
 
-        for(int i = 0; i < 5; i++) {
+        //for(int i = 0; i < 5; i++)
+        {
             sprite.enableAction(rightOut);
             sprite.enableEffect(fadeOut);
             try {
@@ -133,6 +149,8 @@ public class Main {
                 e.printStackTrace();
             }
 
+            //sprite2.enableEffect(rotate);
+            //sprite3.enableEffect(rotate);
 
         }
 

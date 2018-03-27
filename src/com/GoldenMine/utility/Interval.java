@@ -20,13 +20,13 @@ public class Interval {
         intervalTick++;
         //completed = intervalTick >= interval;
 
-        return intervalTick >= interval;
+        return intervalTick > interval;
     }
 
     public boolean addWait() {
         waitTick++;
 
-        completed = waitTick >= wait;
+        completed = waitTick > wait;
 
         return completed;
     }
@@ -58,7 +58,7 @@ public class Interval {
     }
 
     public double getIntervalPercent() {
-        return (double)intervalTick/interval*10000;
+        return (double)intervalTick/interval*10000D;
     }
 
     public boolean getCompletedWait() {
