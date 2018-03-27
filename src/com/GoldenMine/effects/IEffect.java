@@ -9,6 +9,6 @@ public interface IEffect {
 
     public abstract int getIntervalMS();
 
-    public abstract void editImage(BufferedImage original, BufferedImage changed, Graphics changedGraphics, double percent);
+    public abstract BufferedImage editImage(BufferedImage original, BufferedImage changed, Graphics changedGraphics, double percent);
 
 }

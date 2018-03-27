@@ -17,7 +17,7 @@ public class EffectFadeOut implements IEffect {
     }
 
     @Override
-    public void editImage(BufferedImage original, BufferedImage changed, Graphics changeGraphics, double percent) {
+    public BufferedImage editImage(BufferedImage original, BufferedImage changed, Graphics changeGraphics, double percent) {
         int x = changed.getWidth();
         int y = changed.getHeight();
 
@@ -38,6 +38,8 @@ public class EffectFadeOut implements IEffect {
                 changed.setRGB(i, j, rgb.getRGB());*/
             }
         }
+
+        return changed;
     }
 
 

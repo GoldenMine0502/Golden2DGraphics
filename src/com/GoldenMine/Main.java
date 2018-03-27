@@ -6,6 +6,7 @@ import com.GoldenMine.actions.ActionTopFlyAndCome;
 import com.GoldenMine.actions.IAction;
 import com.GoldenMine.effects.EffectFadeIn;
 import com.GoldenMine.effects.EffectFadeOut;
+import com.GoldenMine.effects.EffectRotateRight;
 import com.GoldenMine.effects.IEffect;
 import com.GoldenMine.graphics.ObjectSprite;
 import com.GoldenMine.graphics.Palette;
@@ -17,10 +18,25 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.geom.AffineTransform;
+import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 
 public class Main {
     public static void main(String[] args) {
+        /*
+        BufferedImage bufferedImage = new BufferedImage(200, 200,
+                BufferedImage.TYPE_BYTE_INDEXED);
+
+        AffineTransform tx = new AffineTransform();
+        tx.rotate(0.5, bufferedImage.getWidth() / 2, bufferedImage.getHeight() / 2);
+
+        AffineTransformOp op = new AffineTransformOp(tx,
+                AffineTransformOp.TYPE_BILINEAR);
+        bufferedImage = op.filter(bufferedImage, null);
+
+        System.exit(0);*/
+
         /*
         JFrame f = new JFrame();
         f.setSize(500, 500);
@@ -49,6 +65,8 @@ public class Main {
         /*이펙트 만들기*/
         IEffect fadeIn = new EffectFadeIn();
         IEffect fadeOut = new EffectFadeOut();
+
+        IEffect rotate = new EffectRotateRight();
 
         IAction leftIn = new ActionLeftFlyAndCome();
         IAction rightOut = new ActionRightFlyAndAway();
@@ -81,16 +99,18 @@ public class Main {
         sprite2.registerEffect(fadeIn, 0, 1200);
         sprite2.registerEffect(fadeOut, 0, 1200);
         sprite2.setPoint(200, 200);
+        sprite2.registerEffect(rotate, 0, 60);
 
         palette.addSprite(sprite, true);
-        palette.addSprite(sprite2, true);
+        palette.addSprite(sprite2, false);
 
         palette.startRender();
         //palette.stopRender();
 
             sprite.enableEffect(fadeIn);
             sprite.enableAction(leftIn);
-            sprite2.enableEffect(fadeIn);
+            sprite2.enableEffect(rotate);
+            //sprite2.enableEffect(fadeIn);
             try {
                 Thread.sleep(5000L);
             } catch (InterruptedException e) {

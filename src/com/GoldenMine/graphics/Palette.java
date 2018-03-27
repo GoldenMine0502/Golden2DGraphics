@@ -15,6 +15,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 
 public class Palette extends JFrame {
@@ -48,16 +49,22 @@ public class Palette extends JFrame {
 
         Graphics mainGraphic = getGraphics();
         buffer = new BufferedImage(size.getXInt(), size.getYInt(), BufferedImage.TYPE_INT_ARGB);
-        Graphics bufferGraphic = buffer.getGraphics();
+
 
 
         singleThread = new APISingleThread(TimeUnit.FPS, fps, new APIThreadHandler() {
             @Override
             public void onThreadExecute() throws InterruptedException {
                 /* rendering */
+                Graphics bufferGraphic = buffer.createGraphics();
+                bufferGraphic.clearRect(0, 0, size.getXInt(), size.getYInt());
+
                 for (ObjectSprite sprite : sprites) {
                     List<Pair<IEffect, Interval>> effects = sprite.enabledEffects;
                     List<Pair<IAction, Interval>> actions = sprite.enabledActions;
+
+                    List<BufferedImage> image = spriteImages.get(sprite);
+                    BufferedImage img = image.get(sprite.getCurrentImagePosition());
 
                     /* 이펙트 적용 */
                     for (int i = 0; i < effects.size(); i++) {
@@ -75,8 +82,8 @@ public class Palette extends JFrame {
                                 i--;
                             } else {
                                 // 안끝났으면 이펙트 효과 적용
-                                BufferedImage img = spriteImages.get(sprite).get(sprite.getCurrentImagePosition());
-                                effect.editImage(sprite.getCurrentImage(), img, img.getGraphics(), interval.getIntervalPercent());
+                                image.set(sprite.getCurrentImagePosition(), effect.editImage(sprite.getCurrentImage(), img, bufferGraphic, interval.getIntervalPercent()));
+
                             }
                         } else {
                             //안끝났으면 끝나도록 유도함
@@ -105,6 +112,9 @@ public class Palette extends JFrame {
                         }
                     }
 
+                    Point spritePoint = spritePoints.get(sprite);
+
+                    bufferGraphic.drawImage(spriteImages.get(sprite).get(sprite.getCurrentImagePosition()), spritePoint.getXInt(), spritePoint.getYInt(), null);
                     //스프라이트의 활성화된 이벤트를 얻고
                     //이벤트에서 지난 tick을 계산한다.
                     /*
@@ -153,16 +163,11 @@ public class Palette extends JFrame {
                     for(IAction action : removingActions) {
                         actions.remove(action);
                     }*/
+
+
                 }
 
                 /* dispose */
-                bufferGraphic.clearRect(0, 0, size.getXInt(), size.getYInt());
-                for (ObjectSprite sprite : sprites) {
-                    Point spritePoint = spritePoints.get(sprite);
-
-                    bufferGraphic.drawImage(spriteImages.get(sprite).get(sprite.getCurrentImagePosition()), spritePoint.getXInt(), spritePoint.getYInt(), null);
-                }
-
                 /* copy */
                 //if(mainGraphic!=null)
                     mainGraphic.drawImage(buffer, 0, 0, null);
@@ -236,7 +241,7 @@ public class Palette extends JFrame {
 
         /* copy all of original images */
         List<BufferedImage> originalImgs = objSprite.getImages();
-        List<BufferedImage> imgs = new ArrayList<>();
+        List<BufferedImage> imgs = new LinkedList<>();
 
         for(int i = 0; i < originalImgs.size(); i++) {
             BufferedImage originalImg = originalImgs.get(i);

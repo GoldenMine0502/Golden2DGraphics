@@ -17,7 +17,7 @@ public class EffectFadeIn implements IEffect {
     }
 
     @Override
-    public void editImage(BufferedImage original, BufferedImage changed, Graphics changeGraphics, double percent) {
+    public BufferedImage editImage(BufferedImage original, BufferedImage changed, Graphics changeGraphics, double percent) {
         int x = changed.getWidth();
         int y = changed.getHeight();
 
@@ -46,6 +46,8 @@ public class EffectFadeIn implements IEffect {
         }
 
         //System.out.println(lastAlpha);
+
+        return changed;
     }
 
 

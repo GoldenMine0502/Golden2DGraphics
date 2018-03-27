@@ -84,4 +84,38 @@ public class UtilityFade {
     private static int calculateAlpha(int alpha, double percent) {
         return (int) Math.round(alpha - alpha/10000D*percent);
     }
+
+    public static Point getRotatePoint(final int centerX, final int centerY, double a, double b, double pitch) {
+        // x1 = b * cos(pitch) - a * sin(pitch)
+        // y1 = b * sin(pitch) + a * cos(pitch)
+        //double z = this.z;
+
+        a-=centerX;
+        b-=centerY;
+
+        double d = degree(pitch);
+
+        double x1 = b * Math.cos(d) - a * Math.sin(d);
+
+        double y1 = b * Math.sin(d) + a * Math.cos(d);
+
+        //double x2 = y1 * Math.cos(yaw) - x1 * Math.sin(yaw);
+
+        //double y2 = y1 * Math.cos(yaw) - x1 * Math.sin(yaw);
+
+
+
+        //Point point = Rotate(new Point(x, y), pitch);
+
+        //System.out.println(x1 +", " + y1);
+        //System.out.println(x + ", " + y + ", " + Math.cos(d) + ", " + Math.sin(d) + ", " + b * Math.cos(d) + ", " + a * Math.sin(d));
+
+
+        return new Point(x1 + centerX, y1 + centerY);
+    }
+
+    public static double degree(double ra) {
+        return ra * Math.PI / 180;
+    }
+
 }
