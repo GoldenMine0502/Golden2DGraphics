@@ -5,8 +5,8 @@ import com.GoldenMine.graphics.Palette;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
-public class EnableEvent extends IEvent {
-    public EnableEvent(Palette palette) {
+public class DisableEvent extends IEvent {
+    public DisableEvent(Palette palette) {
         super(palette);
     }
 
@@ -14,7 +14,7 @@ public class EnableEvent extends IEvent {
     protected void listener(Palette palette) {
         palette.addWindowListener(new WindowAdapter() {
             @Override
-            public void windowOpened(WindowEvent e) {
+            public void windowClosing(WindowEvent e) {
                 invoke();
             }
         });

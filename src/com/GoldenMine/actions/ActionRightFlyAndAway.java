@@ -4,19 +4,14 @@ import com.GoldenMine.utility.Point;
 
 import java.awt.image.BufferedImage;
 
-public class ActionRightFlyAndAway implements IAction {
+public class ActionRightFlyAndAway extends ActionFly {
     @Override
-    public Point getNextPosition(Point paletteSize, Point original, BufferedImage image, double percent) {
-        int startX = original.getXInt();
-        //int startY = -image.getHeight();
+    public Point getStartPosition(Point paletteSize, Point original, BufferedImage image) {
+        return new Point(original.getXInt(), original.getY());
+    }
 
-        int goalX = paletteSize.getXInt();
-
-        // goalX - startX = 이동해야하는 거리
-        // 1차함수적으로 -> return new Point((goalX-startX)/10000D*percent, (goalY-startY)/10000D*percent)
-
-
-
-        return new Point( startX + goalX/10000D*percent, original.getY());
+    @Override
+    public Point getFinishPosition(Point paletteSize, Point original, BufferedImage image) {
+        return new Point(paletteSize.getXInt(), original.getY());
     }
 }

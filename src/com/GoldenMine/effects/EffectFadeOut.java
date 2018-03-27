@@ -30,8 +30,12 @@ public class EffectFadeOut implements IEffect {
 
         for(int i = 0; i < x; i++) {
             for(int j = 0; j < y; j++) {
+                //changed.setRGB(i, j, UtilityFade.alphaPlus(original.getRGB(i, j), percent));
+
+                changed.setRGB(i, j, UtilityFade.getAlphaMinus(new Color(original.getRGB(i, j), true), percent).getRGB());
+                /*
                 Color rgb = UtilityFade.getAlphaMinus(new Color(original.getRGB(i, j)), percent);
-                changed.setRGB(i, j, rgb.getRGB());
+                changed.setRGB(i, j, rgb.getRGB());*/
             }
         }
     }

@@ -4,10 +4,10 @@ import com.GoldenMine.utility.Point;
 
 import java.awt.image.BufferedImage;
 
-public class ActionLeftFlyAndCome extends ActionFly {
+public class ActionRightFlyAndCome extends ActionFly {
     @Override
     public Point getStartPosition(Point paletteSize, Point original, BufferedImage image) {
-        return new Point(-image.getWidth(), original.getY());
+        return new Point(paletteSize.getXInt(), original.getY());
     }
 
     @Override

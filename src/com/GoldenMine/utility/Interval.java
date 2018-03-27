@@ -1,5 +1,7 @@
 package com.GoldenMine.utility;
 
+import java.awt.image.BufferedImage;
+
 public class Interval {
     int wait;
     int interval;

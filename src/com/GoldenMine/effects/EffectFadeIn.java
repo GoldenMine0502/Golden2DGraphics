@@ -35,11 +35,11 @@ public class EffectFadeIn implements IEffect {
             for(int j = 0; j < y; j++) {
                 //int rgbi = original.getRGB(i, j);
                 //Graphics2D graphics = changed.createGraphics();
-                Color rgb = UtilityFade.getAlphaPlus(new Color(original.getRGB(i, j)), percent);
+                //Color rgb = UtilityFade.getAlphaPlus(new Color(original.getRGB(i, j)), percent);
 
                 //int rgbb = rgb.getRGB();
                 //lastAlpha = rgb.getRGB();
-                changed.setRGB(i, j, rgb.getRGB());
+                changed.setRGB(i, j, UtilityFade.getAlphaPlus(new Color(original.getRGB(i, j), true), percent).getRGB());
                 //System.out.println(rgbi + ", " + rgbb);
 
             }
