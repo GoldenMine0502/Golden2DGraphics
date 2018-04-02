@@ -23,6 +23,8 @@ public class ObjectSprite {
 
     private List<BufferedImage> images = new ArrayList<BufferedImage>();
 
+    private double currentScale = 1.0;
+
     //BufferedImage original;
 
     private int currentImagePoint = 0;
@@ -45,10 +47,12 @@ public class ObjectSprite {
         images.add(image);
         //original = image;
         currentImagePoint = 0;
+        //setScale(4);
     }
 
     public ObjectSprite() {
         currentImagePoint = -1;
+        //setScale(4);
     }
 
     public void setPoint(Point p) {
@@ -70,6 +74,10 @@ public class ObjectSprite {
 
         point.setX((x+x2)/2);
         point.setY((y+y2)/2);
+    }
+
+    public double getScale() {
+        return currentScale;
     }
 
     public Point getPosition() {

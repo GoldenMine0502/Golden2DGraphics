@@ -14,4 +14,9 @@ public class ActionLeftFlyAndCome extends ActionFly {
     public Point getFinishPosition(Point paletteSize, Point original, BufferedImage image) {
         return new Point(original.getXInt(), original.getY());
     }
+
+    @Override
+    public String getName() {
+        return "ActionFly-LC";
+    }
 }

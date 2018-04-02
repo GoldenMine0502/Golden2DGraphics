@@ -12,6 +12,7 @@ import javafx.util.Pair;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,12 +26,80 @@ public class Palette extends JFrame {
     //
     //BufferedImage paletteImage;
 
+    /*
+    getCurrentRGB()
+    List<ObjectSprite>에서 이미지의 모든 픽셀들의 합을 구한다.
+    ObjectSprite.getPosition().add(currentpixel) 최종 좌표
+
+
+     */
+
+    class SpriteData {
+        private List<SpriteElementData> elements = new ArrayList<>();
+        private Point position;
+
+        public SpriteData(ObjectSprite sprite, boolean transparency) {
+            List<BufferedImage> originalImgs = sprite.getImages();
+
+            for(int i = 0; i < originalImgs.size(); i++) {
+                elements.add(new SpriteElementData(originalImgs.get(i), transparency));
+            }
+
+            Point toCpy = sprite.getPosition();
+
+            position = new Point(toCpy.getX(), toCpy.getY());
+        /* copy all of original images */
+        }
+
+        public List<SpriteElementData> getSpriteElements() {
+            return elements;
+        }
+
+        public Point getPosition() {
+            return position;
+        }
+
+        public void setPosition(Point position) {
+            this.position = position;
+        }
+    }
+
+    class SpriteElementData {
+        private BufferedImage copied;
+        private Graphics2D graphics2D;
+
+        public SpriteElementData(BufferedImage originalImg, boolean transparency) {
+            Graphics2D g2d = buffer.createGraphics();
+
+            copied = new BufferedImage(originalImg.getWidth(), originalImg.getHeight(), BufferedImage.TYPE_INT_ARGB);
+            copied.getGraphics().drawImage(originalImg, 0, 0, null);
+
+            if(transparency) {
+                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0));
+            }
+
+            this.graphics2D = g2d;
+        }
+
+        public BufferedImage getImage() {
+            return copied;
+        }
+
+        public Graphics2D getGraphics() {
+            return graphics2D;
+        }
+    }
+
+
     BufferedImage buffer;
     //int nextBufferPoint = 0;
 
     List<ObjectSprite> sprites = new ArrayList<>();
-    HashMap<ObjectSprite, List<Pair<BufferedImage, Graphics2D>>> spriteImages = new HashMap<>();
-    HashMap<ObjectSprite, Point> spritePoints = new HashMap<>();
+    //HashMap<ObjectSprite, List<Pair<BufferedImage, Graphics2D>>> spriteImages = new HashMap<>();
+    //HashMap<ObjectSprite, Point> spritePoints = new HashMap<>();
+
+    HashMap<ObjectSprite, SpriteData> spriteConfigs = new HashMap<>();
+
     //List<IEvent> events = new ArrayList<IEvent>();
 
     APISingleThread singleThread;
@@ -60,15 +129,17 @@ public class Palette extends JFrame {
                 bufferGraphic.clearRect(0, 0, size.getXInt(), size.getYInt());
                 //bufferGraphic.fillRect(0,0,size.getXInt(), size.getYInt());
                 for (ObjectSprite sprite : sprites) {
+                    SpriteData spriteData = spriteConfigs.get(sprite);
+                    SpriteElementData elementData = spriteData.getSpriteElements().get(sprite.getCurrentImagePosition());
 
                     List<Pair<IEffect, Interval>> effects = sprite.enabledEffects;
                     List<Pair<IAction, Interval>> actions = sprite.enabledActions;
+                    //List<Pair<BufferedImage, Graphics2D>> imageData = elementData.get(sprite);
 
-                    List<Pair<BufferedImage, Graphics2D>> imageData = spriteImages.get(sprite);
+                    //Pair<BufferedImage, Graphics2D> imagePair = imageData.get(sprite.getCurrentImagePosition());
+                    BufferedImage img = elementData.getImage();
 
-                    Pair<BufferedImage, Graphics2D> imagePair = imageData.get(sprite.getCurrentImagePosition());
-
-                    BufferedImage img = imagePair.getKey();
+                    Graphics2D g2dimg = elementData.getGraphics();
 
                     //Graphics bufferGraphicInternal = imagePair.getValue();
 
@@ -93,9 +164,9 @@ public class Palette extends JFrame {
                             } else {
                                 // 안끝났으면 이펙트 효과 적용
 
-
-                                imageData.set(sprite.getCurrentImagePosition(), new Pair<>(effect.editImage(size, sprite.getPosition(), sprite.getCurrentImage(), img, imagePair.getValue(), interval.getIntervalPercent()), imagePair.getValue()));
-
+                                //System.out.println(effects.size());
+                                //.set(sprite.getCurrentImagePosition(), new Pair<>(effect.editImage(size, sprite.getPosition(), sprite.getCurrentImage(), img, imagePair.getValue(), interval.getIntervalPercent()), imagePair.getValue()));
+                                effect.editImage(size, sprite.getPosition(), sprite.getCurrentImage(), img, g2dimg, interval.getIntervalPercent());
                             }
                         } else {
                             //안끝났으면 끝나도록 유도함
@@ -116,7 +187,8 @@ public class Palette extends JFrame {
                                 actions.remove(0);
                             } else {
                                 // 안끝났으면 액션 효과 적용
-                                spritePoints.put(sprite, action.getNextPosition(size, sprite.getPosition(), spritePoints.get(sprite), sprite.getCurrentImage(), interval.getIntervalPercent()));
+                                spriteData.setPosition(action.getNextPosition(size, sprite.getPosition(), spriteData.getPosition(), sprite.getCurrentImage(), interval.getIntervalPercent()));
+                                //spritePoints.put(sprite, action.getNextPosition(size, sprite.getPosition(), spritePoints.get(sprite), sprite.getCurrentImage(), interval.getIntervalPercent()));
                             }
                         } else {
                             //안끝났으면 끝나도록 유도함
@@ -124,9 +196,13 @@ public class Palette extends JFrame {
                         }
                     }
 
-                    Point spritePoint = spritePoints.get(sprite);
+                    Point spritePoint = spriteData.getPosition();
 
-                    imagePair.getValue().drawImage(spriteImages.get(sprite).get(sprite.getCurrentImagePosition()).getKey(), spritePoint.getXInt(), spritePoint.getYInt(), null);
+                    //AffineTransform tr = g2dimg.getTransform();
+                    //tr.setToScale(0.5, 0.5);
+                    //g2dimg.setTransform(tr);
+                    g2dimg.drawImage(elementData.getImage(), spritePoint.getXInt(), spritePoint.getYInt(), null);
+                    //imagePair.getValue().drawImage(spriteImages.get(sprite).get(sprite.getCurrentImagePosition()).getKey(), spritePoint.getXInt(), spritePoint.getYInt(), null);
                     //스프라이트의 활성화된 이벤트를 얻고
                     //이벤트에서 지난 tick을 계산한다.
                     /*
@@ -244,19 +320,16 @@ public class Palette extends JFrame {
         }
     }
 
-    public void updateSprite(ObjectSprite sprite) {
-
-    }
-
     public void addSprite(ObjectSprite objectSprite) {
-        addSprite(objectSprite, false);
+        addSprite(objectSprite, true);
     }
 
     public void addSprite(ObjectSprite objSprite, boolean transparent) {
         sprites.add(objSprite);
 
         /* copy all of original images */
-        List<BufferedImage> originalImgs = objSprite.getImages();
+        spriteConfigs.put(objSprite, new SpriteData(objSprite, transparent));
+        /*List<BufferedImage> originalImgs = objSprite.getImages();
         List<Pair<BufferedImage, Graphics2D>> imgs = new LinkedList<>();
 
         for(int i = 0; i < originalImgs.size(); i++) {
@@ -272,9 +345,9 @@ public class Palette extends JFrame {
             }
 
             imgs.add(new Pair<>(img, g2d));
-        }
-        spriteImages.put(objSprite, imgs);
-        spritePoints.put(objSprite, new Point(objSprite.getPosition().getX(), objSprite.getPosition().getY()));
+        }*/
+        //spriteImages.put(objSprite, imgs);
+        //spritePoints.put(objSprite, new Point(objSprite.getPosition().getX(), objSprite.getPosition().getY()));
     }
 
     public void startRender() {

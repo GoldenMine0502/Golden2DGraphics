@@ -14,4 +14,9 @@ public class ActionRightFlyAndAway extends ActionFly {
     public Point getFinishPosition(Point paletteSize, Point original, BufferedImage image) {
         return new Point(paletteSize.getXInt(), original.getY());
     }
+
+    @Override
+    public String getName() {
+        return "ActionFly-RA";
+    }
 }

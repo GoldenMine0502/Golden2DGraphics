@@ -1,5 +1,6 @@
 package com.GoldenMine.actions;
 
+import com.GoldenMine.utility.IntervalSpeed;
 import com.GoldenMine.utility.Point;
 
 import java.awt.image.BufferedImage;
@@ -50,6 +51,16 @@ public abstract class ActionFly implements IAction {
 
         return Math.abs(r);
     }*/
+
+    @Override
+    public int getDefaultWaitTime(IntervalSpeed speed) {
+        return 0;
+    }
+
+    @Override
+    public int getDefaultInterval(IntervalSpeed speed) {
+        return 200-40*speed.getSpeed();
+    }
 
     public abstract Point getStartPosition(Point paletteSize, Point original, BufferedImage image);
 

@@ -1,6 +1,7 @@
 package com.GoldenMine.effects;
 
 import com.GoldenMine.utility.Point;
+import javafx.util.Pair;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -17,7 +18,7 @@ public class EffectRotateRight implements IEffect{
 
         long start = System.currentTimeMillis();
         for(int i = 0; i < 100000; i++) {
-            image.getGraphics().drawImage(r.editImage(p1, p2, image, image, image.getGraphics(), 5000), 0, 0, null);
+            //image.getGraphics().drawImage(r.editImage(p1, p2, image, image, image.getGraphics(), 5000), 0, 0, null);
         }
         System.out.println(System.currentTimeMillis()-start);
         //editImage(new Point(500, 500), new Point(0, 0), new )
@@ -34,16 +35,24 @@ public class EffectRotateRight implements IEffect{
     }
 
     @Override
-    public BufferedImage editImage(Point paletteSize, Point spritePos, BufferedImage original, BufferedImage changed, Graphics changedGraphics, double percent) {
+    public Pair<Point, Point> editImage(Point paletteSize, Point spritePos, BufferedImage original, BufferedImage changed, Graphics changedGraphics, double percent) {
         if(changedGraphics instanceof Graphics2D) {
-            Graphics2D graphics2D = (Graphics2D)changedGraphics;
+            Graphics2D g2d = (Graphics2D)changedGraphics;
 
-            AffineTransform tx = new AffineTransform();
+
+            //AffineTransform trans = g2d.getTransform();
+
+            g2d.getTransform().setToRotation(Math.toRadians(percent/10000D*360D), spritePos.getXInt() + original.getWidth() / 2, spritePos.getYInt() + original.getHeight() / 2);
+
+            //g2d.setTransform(trans);
+            //AffineTransform tx = new AffineTransform();
             //System.out.println(percent/10000D*360D);
-            tx.rotate(Math.toRadians(percent/10000D*360D), spritePos.getXInt() + original.getWidth() / 2, spritePos.getYInt() + original.getHeight() / 2);
+            //g2d.getTransform().rotate(Math.toRadians(percent/10000D*360D), spritePos.getXInt() + original.getWidth() / 2, spritePos.getYInt() + original.getHeight() / 2);
+            //graphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+            //        RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             //AffineTransformOp op = new AffineTransformOp(tx,
             //        AffineTransformOp.TYPE_BILINEAR);
-            graphics2D.setTransform(tx);
+            //graphics2D.setTransform(tx);
 
         }
 
@@ -64,8 +73,8 @@ public class EffectRotateRight implements IEffect{
 
 
 
-
-        return changed;
+        return new Pair<Point, Point>(new Point(0, 0), new Point(original.getWidth(), original.getHeight()));
+        //return changed;
         //changed.getGraphics().drawImage(op.filter(original, changed), 0, 0, null);
     }
 }

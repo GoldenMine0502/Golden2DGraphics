@@ -118,4 +118,8 @@ public class UtilityFade {
         return ra * Math.PI / 180;
     }
 
+    public static int getResizedScalePoint(int location, int imageSize, double scale) {
+        //System.out.println("location: " + location + ", imageSize: " + imageSize + ", Scale" + scale + ", calculated: " + (1/scale));
+        return (int) Math.round(location * 1D / scale + imageSize * 1D / scale / 2D - imageSize/2D);
+    }
 }

@@ -3,6 +3,7 @@ package com.GoldenMine.effects;
 import com.GoldenMine.utility.Point;
 
 import com.GoldenMine.utility.UtilityFade;
+import javafx.util.Pair;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -19,7 +20,7 @@ public class EffectFadeOut implements IEffect {
     }
 
     @Override
-    public BufferedImage editImage(Point paletteSize, Point spritePos, BufferedImage original, BufferedImage changed, Graphics changeGraphics, double percent) {
+    public Pair<Point, Point> editImage(Point paletteSize, Point spritePos, BufferedImage original, BufferedImage changed, Graphics changeGraphics, double percent) {
         if(changeGraphics instanceof Graphics2D) {
             //System.out.println("a");
             ((Graphics2D)changeGraphics).setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 1-(float)percent/10000F));
@@ -47,8 +48,8 @@ public class EffectFadeOut implements IEffect {
             AlphaComposite ac = AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float) percent / 100f);
             g2d.setComposite(ac);
         }*/
-
-        return changed;
+        return new Pair<Point, Point>(new Point(0, 0), new Point(original.getWidth(), original.getHeight()));
+        //return changed;
     }
 
 

@@ -3,6 +3,7 @@ package com.GoldenMine.effects;
 import com.GoldenMine.utility.Point;
 
 import com.GoldenMine.utility.UtilityFade;
+import javafx.util.Pair;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -17,7 +18,7 @@ public class EffectFadeIn implements IEffect {
 
         long start = System.currentTimeMillis();
         for(int i = 0; i < 1000; i++) {
-            image.getGraphics().drawImage(r.editImage(p1, p2, image, image, image.getGraphics(), 5000), 0, 0, null);
+            //image.getGraphics().drawImage(r.editImage(p1, p2, image, image, image.getGraphics(), 5000), 0, 0, null);
         }
         System.out.println(System.currentTimeMillis()-start);
         //editImage(new Point(500, 500), new Point(0, 0), new )
@@ -34,7 +35,7 @@ public class EffectFadeIn implements IEffect {
     }
 
     @Override
-    public BufferedImage editImage(Point paletteSize, Point spritePos, BufferedImage original, BufferedImage changed, Graphics changeGraphics, double percent) {
+    public Pair<Point, Point> editImage(Point paletteSize, Point spritePos, BufferedImage original, BufferedImage changed, Graphics changeGraphics, double percent) {
         /*Graphics oriG = changed.getGraphics();
 
         if(oriG instanceof Graphics2D) {
@@ -77,8 +78,8 @@ public class EffectFadeIn implements IEffect {
         }*/
 
         //System.out.println(lastAlpha);
-
-        return changed;
+        return new Pair<Point, Point>(new Point(0, 0), new Point(original.getWidth(), original.getHeight()));
+        //return changed;
     }
 
 

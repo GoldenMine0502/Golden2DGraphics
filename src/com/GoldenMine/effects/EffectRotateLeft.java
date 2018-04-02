@@ -1,6 +1,7 @@
 package com.GoldenMine.effects;
 
 import com.GoldenMine.utility.Point;
+import javafx.util.Pair;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
@@ -18,19 +19,33 @@ public class EffectRotateLeft implements IEffect{
     }
 
     @Override
-    public BufferedImage editImage(Point paletteSize, Point spritePos, BufferedImage original, BufferedImage changed, Graphics changedGraphics, double percent) {
-        if(changedGraphics instanceof Graphics2D) {
-            Graphics2D graphics2D = (Graphics2D)changedGraphics;
+    public Pair<Point, Point> editImage(Point paletteSize, Point spritePos, BufferedImage original, BufferedImage changed, Graphics changedGraphics, double percent) {
 
-            AffineTransform tx = new AffineTransform();
+        /*if(changedGraphics instanceof Graphics2D) {
+            Graphics2D g2d = (Graphics2D)changedGraphics;
+
+            AffineTransform trans = g2d.getTransform();
+            trans.setToRotation(Math.toRadians(-percent/10000D*360D), spritePos.getXInt() + original.getWidth() / 2, spritePos.getYInt() + original.getHeight() / 2);
+            g2d.setTransform(trans);
+            //AffineTransform tx = new AffineTransform();
             //System.out.println(percent/10000D*360D);
-            tx.rotate(Math.toRadians(-percent/10000D*360D), spritePos.getXInt() + original.getWidth() / 2, spritePos.getYInt() + original.getHeight() / 2);
-            graphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                    RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            //tx.rotate(Math.toRadians(-percent/10000D*360D), spritePos.getXInt() + original.getWidth() / 2, spritePos.getYInt() + original.getHeight() / 2);
+            //graphics2D.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+            //        RenderingHints.VALUE_INTERPOLATION_BILINEAR);
             //AffineTransformOp op = new AffineTransformOp(tx,
             //        AffineTransformOp.TYPE_BILINEAR);
-            graphics2D.setTransform(tx);
+            //graphics2D.setTransform(tx);
+        }*/
+
+        int width = original.getWidth();
+        int height = original.getHeight();
+
+        for(int x = 0; x < width; x++) {
+            for(int y = 0; y < height; y++) {
+                //IEffect.setRGBWithTransparency();
+            }
         }
+
         //System.out.println(percent + ", " + percent/10000D*360D);
 
         //System.out.println("a");
@@ -49,8 +64,8 @@ public class EffectRotateLeft implements IEffect{
 
 
 
-
-        return changed;
+        return new Pair<Point, Point>(new Point(-original.getWidth()/2, -original.getHeight()/2), new Point(original.getWidth()*3/2, original.getHeight()*3/2));
+        //return changed;
         //changed.getGraphics().drawImage(op.filter(original, changed), 0, 0, null);
     }
 }
