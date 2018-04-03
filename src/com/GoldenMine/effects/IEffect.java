@@ -15,4 +15,8 @@ public interface IEffect {
 
     int getDefaultWaitTime(IntervalSpeed speed);
     int getDefaultInterval(IntervalSpeed speed);
+
+    static double getPercent(int start, int finish, double percent) {
+        return start + percent/10000D*(finish-start);
+    }
 }

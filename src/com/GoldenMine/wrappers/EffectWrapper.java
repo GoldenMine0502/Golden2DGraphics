@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EffectWrapper {
-    List<Pair<IEffect, EffectData>> effects = new ArrayList<>();
+    private List<Pair<IEffect, EffectData>> effects = new ArrayList<>();
     //List<Pair<String, Interval>> actions = new ArrayList<>();
     //List<Pair<String, Interval>> relativeActions = new ArrayList<>();
 
@@ -48,7 +48,21 @@ public class EffectWrapper {
     }
 
     public List<Pair<IEffect, EffectData>> getEffects() {
-        return effects;
+        List<Pair<IEffect, EffectData>> copy = new ArrayList<>(effects.size());
+
+        for(int i = 0; i < effects.size(); i++) {
+            Pair<IEffect, EffectData> data = effects.get(i);
+
+            EffectData effectData = data.getValue();
+            Interval interval = effectData.getInterval();
+
+            copy.add(new Pair<>(data.getKey(),
+                    new EffectData(new Interval(interval.getWait(), interval.getInterval(), interval.getNatural()), effectData.getParameters())));
+        }
+
+        //System.out.println(effects.size());
+
+        return copy;
     }
 
 }

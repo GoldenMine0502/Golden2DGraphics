@@ -9,6 +9,7 @@ import com.GoldenMine.wrappers.EffectWrapper;
 import javafx.util.Pair;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -34,16 +35,12 @@ public class ObjectSprite {
     -> 현재 action, relativeaction, effect를 재사용할 최선의 방법으로 생각됨
      */
 
+    /*
+    ImageSprite - 그냥 기본적인 스프라이트
+    LabelSprite - 라벨을 담는 스프라이트(이미지화 해야함)
+     */
 
-
-    List<Pair<IEffect, EffectData>> effects = new LinkedList<>();
-    List<EffectWrapper> wrappers = new LinkedList<>();
-
-    private List<BufferedImage> images = new ArrayList<BufferedImage>();
-
-    private Point position = new Point();
-
-    private int currentImagePosition;
+    protected List<BufferedImage> images = new ArrayList<BufferedImage>();
 
     public ObjectSprite(BufferedImage image) {
         addImage(image);
@@ -57,10 +54,64 @@ public class ObjectSprite {
         this(new File(route));
     }
 
+    public ObjectSprite(Font font, String str, Color color) {
+        this(makeImageFromText(font, str, color));
+    }
+
+    List<Pair<IEffect, EffectData>> effects = new LinkedList<>();
+    List<EffectWrapper> wrappers = new LinkedList<>();
+
+
+
+    private Point position = new Point();
+
+    private int currentImagePosition;
+
     public void setPosition(Point point) {
         position.setX(point.getX());
         position.setY(point.getY());
     }
+
+    public void setPosition(int x, int y) {
+        position.setX(x);
+        position.setY(y);
+    }
+
+
+    /*public void addEffect(String effect, IntervalSpeed speed, Object... parameters) {
+        addEffect(effect, speed, false, parameters);
+    }
+
+    public void addEffect(String effect, int wait, int interval, Object... parameters) {
+        addEffect(effect, wait, interval, false, parameters);
+    }*/
+
+    public void addEffect(String effect, IntervalSpeed speed, boolean natural, Object... parameters) {
+        IEffect iEffect = Palette.getEffect(effect);
+
+        effects.add(new Pair<>(iEffect, new EffectData(Palette.getInterval(iEffect, speed, natural), parameters)));
+    }
+
+    public void addEffect(String effect, int wait, int interval, boolean natural, Object... parameters) {
+        effects.add(new Pair<>(Palette.getEffect(effect), new EffectData(new Interval(wait, interval, natural), parameters)));
+    }
+
+    public void addWrapper(EffectWrapper wrapper) {
+        wrappers.add(wrapper);
+    }
+
+    public Point getPosition() {
+        return position;
+    }
+
+    public void setCurrentImagePosition(int n) {
+        currentImagePosition = n;
+    }
+
+    public int getCurrentImagePosition() {
+        return currentImagePosition;
+    }
+
 
     public void setPositionInCenter(Point point) {
         double x = point.getX();
@@ -85,8 +136,27 @@ public class ObjectSprite {
             }
         }
 
-        position.setX((x + x2) / 2);
-        position.setY((y + y2) / 2);
+        setPosition((int)Math.round((x + x2) / 2), (int)Math.round((y + y2) / 2));
+        System.out.println(position);
+    }
+
+    private static BufferedImage getImage(File file) {
+        try {
+            return ImageIO.read(file);
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
+
+        return null;
+    }
+
+
+    public List<BufferedImage> getImages() {
+        return images;
+    }
+
+    public BufferedImage getCurrentImage() {
+        return images.get(getCurrentImagePosition());
     }
 
     public void addImage(BufferedImage image) {
@@ -105,55 +175,25 @@ public class ObjectSprite {
         addImage(new File(route));
     }
 
-    private static BufferedImage getImage(File file) {
-        try {
-            return ImageIO.read(file);
-        } catch(Exception ex) {
-            ex.printStackTrace();
-        }
+    private static BufferedImage defaultImage = new BufferedImage(1,1, BufferedImage.TYPE_INT_ARGB);
+    private static Graphics2D defaultGraphics2D = (Graphics2D) defaultImage.getGraphics();
 
-        return null;
+    public static Point getTextSize(Font font, String text) {
+        FontMetrics fm = defaultGraphics2D.getFontMetrics(font);
+
+        return new Point(fm.stringWidth(text), font.getSize());
     }
 
-    /*public void addEffect(String effect, IntervalSpeed speed, Object... parameters) {
-        addEffect(effect, speed, false, parameters);
-    }
+    public static BufferedImage makeImageFromText(Font font, String text, Color color) {
+        Point size = getTextSize(font, text);
 
-    public void addEffect(String effect, int wait, int interval, Object... parameters) {
-        addEffect(effect, wait, interval, false, parameters);
-    }*/
+        BufferedImage image = new BufferedImage(size.getXInt(), size.getYInt()*2, BufferedImage.TYPE_INT_ARGB);
+        Graphics g = image.getGraphics();
+        g.setColor(color);
+        g.setFont(font);
 
-    public void addEffect(String effect, IntervalSpeed speed, boolean natural, Object... parameters) {
-        IEffect iEffect = Palette.getEffect(effect);
+        g.drawString(text, 0, size.getYInt());
 
-        effects.add(new Pair<>(iEffect, new EffectData(Palette.getInterval(iEffect, speed, natural), parameters)));
-    }
-
-    public void addEffect(String effect, int wait, int interval, boolean natural, Object... parameters) {
-        effects.add(new Pair<>(Palette.getEffect(effect), new EffectData(new Interval(wait, interval, natural), parameters)));
-    }
-
-    public void addWrapper(EffectWrapper wrapper) {
-        wrappers.add(wrapper);
-    }
-
-    public List<BufferedImage> getImages() {
-        return images;
-    }
-
-    public Point getPosition() {
-        return position;
-    }
-
-    public void setCurrentImagePosition(int n) {
-        currentImagePosition = n;
-    }
-
-    public int getCurrentImagePosition() {
-        return currentImagePosition;
-    }
-
-    public BufferedImage getCurrentImage() {
-        return images.get(getCurrentImagePosition());
+        return image;
     }
 }

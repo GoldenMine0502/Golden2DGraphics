@@ -114,4 +114,8 @@ public class Interval {
     private double getNaturalIntervalPercent() {
         return naturalInterval/interval*10000D;
     }
+
+    public boolean getNatural() {
+        return natural;
+    }
 }

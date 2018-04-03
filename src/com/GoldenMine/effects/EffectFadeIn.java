@@ -10,9 +10,23 @@ import java.awt.image.BufferedImage;
 public class EffectFadeIn implements IEffect {
     @Override
     public Point editImage(Point paletteSize, Point imagePosition, Point imagePositionChanged, BufferedImage original, BufferedImage changed, Graphics2D graphics2D, AffineTransform transform, AffineTransform changedTransform, double percent, Object... parameters) {
-        graphics2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float)percent/10000F));
+        double scale = -1;
 
-        return imagePosition;
+        switch(parameters.length) {
+            case 0:
+                scale = percent/10000D;
+                break;
+            case 1:
+                scale = percent/10000D*(int)parameters[0];
+                break;
+            case 2:
+                scale = IEffect.getPercent((int)parameters[0], (int)parameters[1], percent)/10000D;
+                break;
+        }
+
+        graphics2D.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, (float)scale));
+
+        return imagePositionChanged;
     }
 
     @Override

@@ -27,8 +27,19 @@ public class EffectScaleBigger implements IEffect {
 
     @Override
     public Point editImage(Point paletteSize, Point imagePosition, Point imagePositionChanged, BufferedImage original, BufferedImage changed, Graphics2D graphics2D, AffineTransform transform, AffineTransform changedTransform, double percent, Object... parameters) {
-        double scale = percent / 10000D;
+        double scale = -1;
 
+        switch(parameters.length) {
+            case 0:
+                scale = percent/10000D;
+                break;
+            case 1:
+                scale = percent/10000D*(int)parameters[0];
+                break;
+            case 2:
+                scale = IEffect.getPercent((int)parameters[0], (int)parameters[1], percent)/10000D;
+                break;
+        }
         //AffineTransform form = new AffineTransform();
         transform.scale(scale, scale);
 

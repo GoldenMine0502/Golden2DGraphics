@@ -20,7 +20,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 
-public class Palette extends JFrame {
+public class Palette extends JPanel {
     /*
     이펙트와 액션 통합
 
@@ -173,6 +173,11 @@ public class Palette extends JFrame {
             }
 
             this.graphics2D = g2d;
+
+            //g2d.setRenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+
             transform = g2d.getTransform();
         }
 
@@ -193,8 +198,14 @@ public class Palette extends JFrame {
         }
     }
 
-    public Palette(String title, Point size, int fps) {
-        setTitle(title);
+    @Override
+    public void setVisible(boolean aFlag) {
+        super.setVisible(aFlag);
+        mainGraphics = getGraphics();
+    }
+
+    public Palette(Point size, int fps) {
+        //setTitle(title);
         setSize(size.getXInt(), size.getYInt());
 
         setVisible(true);
@@ -218,23 +229,27 @@ public class Palette extends JFrame {
 
                 for(ObjectSprite objectSprite : sprites) {
                     AffineTransform transform = new AffineTransform();
-
+                    Point position = new Point(objectSprite.getPosition().getX(), objectSprite.getPosition().getY());
                     SpriteData data = spriteConfigs.get(objectSprite);
 
-                    Point currentPoint = data.getPosition();
 
-                    handleList(objectSprite, objectSprite.effects, currentPoint, transform);
+
+                    //Point currentPoint = data.getPosition();
+
+                    handleList(objectSprite, objectSprite.effects, position, transform);
 
                     for(EffectWrapper wrapper : objectSprite.wrappers) {
-                        handleList(objectSprite, wrapper.getEffects(), currentPoint, transform);
+                        handleList(objectSprite, wrapper.getEffects(), position, transform);
                     }
                     //System.out.println("current " + currentPoint);
                     //if(data!=null && data.getPosition()!=null)
                     //    System.out.println(data.getPosition().getXInt());
 
                     if(objectSprite.effects.size()>0) {
-                        SpriteElementData elementData = spriteConfigs.get(objectSprite).getSpriteElements().get(objectSprite.getCurrentImagePosition());
+                        //SpriteData spritedata = spriteConfigs.get(objectSprite);
+                        SpriteElementData elementData = data.getSpriteElements().get(objectSprite.getCurrentImagePosition());
                         elementData.setTransform(transform);
+                        data.setPosition(position);
                         //System.out.println(data.getPosition());
                     }
                 }
@@ -248,6 +263,7 @@ public class Palette extends JFrame {
                     bufferGraphics.setTransform(elementData.getTransform());
                     Point position = data.getPosition();
                     //if(position!=null) {
+
                         bufferGraphics.drawImage(elementData.getImage(), position.getXInt(), position.getYInt(), null);
                     //}
                 }
@@ -286,6 +302,8 @@ public class Palette extends JFrame {
     }
 
     public void handleList(ObjectSprite objectSprite, List<Pair<IEffect, EffectData>> effects, Point point, AffineTransform toApply) {
+        Point result = point;
+
         for(int i = 0; i < effects.size(); i++) {
             Pair<IEffect, EffectData> effectPair = effects.get(i);
             IEffect effect = effectPair.getKey();
@@ -297,18 +315,19 @@ public class Palette extends JFrame {
                 SpriteElementData elementData = spriteData.getSpriteElements().get(objectSprite.getCurrentImagePosition());
 
                 //AffineTransform past = elementData.getTransform();
-                Point result =  effect.editImage(paletteSize, objectSprite.getPosition(), point,
+                result =  effect.editImage(paletteSize, objectSprite.getPosition(), result,
                         objectSprite.getCurrentImage(), elementData.getImage(), elementData.getGraphics(),
                         toApply, elementData.getTransform(), interval.getIntervalPercent(), parameter);
-
-                point.setX(result.getX());
-                point.setY(result.getY());
+                //System.out.println(result);
                 //point = handleEffect(objectSprite, effect, point, interval.getIntervalPercent(), toApply, parameter);
             } else {
-                objectSprite.effects.remove(i);
+                effects.remove(i);
                 i--;
             }
         }
+
+        point.setX(result.getX());
+        point.setY(result.getY());
         //spriteConfigs.get(objectSprite).setPosition(point);
         //return point;
     }
