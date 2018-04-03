@@ -1,24 +1,48 @@
 package com.GoldenMine.utility;
 
-import java.awt.image.BufferedImage;
-
 public class Interval {
+    /*
+    1차함수 그래프를 적분하면 2차함수가 된다7+
+     */
+
+    public static void main(String[] args ) {
+        final int LOOP = 1238;
+
+        Interval interval = new Interval(0, LOOP);
+        for(int i = 0; i < LOOP; i++) {
+            interval.addTick();
+            System.out.println(interval.getIntervalPercent() + ", " + interval.getNaturalIntervalPercent());
+        }
+    }
+
     int wait;
     int interval;
 
     int waitTick;
     int intervalTick;
 
-    boolean completed = false;
+    double naturalInterval;
+
+    boolean waitCompleted = false;
+
+    boolean natural = false;
 
     public Interval(int wait, int interval) {
         this.wait = wait;
         this.interval = interval;
     }
 
+    public Interval(int wait, int interval, boolean natural) {
+        this(wait, interval);
+        this.natural = natural;
+    }
+
     public boolean addTick() {
+        naturalInterval += getCurrentValue(getInnerIntervalPercent());
         intervalTick++;
-        //completed = intervalTick >= interval;
+        //waitCompleted = intervalTick >= interval;
+
+        //System.out.println(naturalInterval);
 
         return intervalTick > interval;
     }
@@ -26,9 +50,9 @@ public class Interval {
     public boolean addWait() {
         waitTick++;
 
-        completed = waitTick > wait;
+        waitCompleted = waitTick > wait;
 
-        return completed;
+        return waitCompleted;
     }
 
     public void initalize() {
@@ -42,7 +66,6 @@ public class Interval {
     public int getWaitTick() {
         return waitTick;
     }
-
 
     public int getInterval() {
         return interval;
@@ -58,10 +81,37 @@ public class Interval {
     }
 
     public double getIntervalPercent() {
-        return (double)intervalTick/interval*10000D;
+        //System.out.println(natural + ", " +((double) intervalTick / interval * 10000D)  + ", " +getNaturalIntervalPercent());
+        if(natural) {
+            return getNaturalIntervalPercent();
+        } else {
+            return getInnerIntervalPercent();
+        }
     }
 
     public boolean getCompletedWait() {
-        return completed;
+        return waitCompleted;
+    }
+
+
+    private static double getCurrentValue(double percent) {
+        if(percent<=5000) {
+            //1~5000
+            //y=1/90 * x
+            return 1D/2500D * percent; // percent 5000일때 기울기 2
+        } else {
+            return 1D/2500D * (10000-percent);
+            //5001~10000
+            //y=-1/90 * x + 4
+            // percent 10000일때 기울기 0
+        }
+    }
+
+    private double getInnerIntervalPercent() {
+        return (double) intervalTick / interval * 10000D;
+    }
+
+    private double getNaturalIntervalPercent() {
+        return naturalInterval/interval*10000D;
     }
 }

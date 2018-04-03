@@ -10,8 +10,15 @@ import java.awt.image.BufferedImage;
 public class EffectRotateLeft implements IEffect {
     @Override
     public Point editImage(Point paletteSize, Point imagePosition, Point imagePositionChanged, BufferedImage original, BufferedImage changed, Graphics2D graphics2D, AffineTransform transform, AffineTransform changedTransform, double percent, Object... parameters) {
+        double scale;
 
-        transform.rotate(Math.toRadians(-percent/10000D*360D), imagePositionChanged.getXInt() + original.getWidth() / 2, imagePositionChanged.getYInt() + original.getHeight() / 2);
+        if(parameters.length==1) {
+            scale = percent/10000D*360D*(int)parameters[0];
+        } else {
+            scale = percent/10000D*360D;
+        }
+
+        transform.rotate(Math.toRadians(-scale), imagePositionChanged.getXInt() + original.getWidth() / 2, imagePositionChanged.getYInt() + original.getHeight() / 2);
 
         return imagePositionChanged;
     }

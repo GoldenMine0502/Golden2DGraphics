@@ -36,8 +36,10 @@ public class Palette extends JFrame {
         addEffect(new EffectFadeIn());
         addEffect(new EffectFadeOut());
         addEffect(new EffectScaleBigger());
+        addEffect(new EffectScaleSmaller());
         addEffect(new EffectRotateLeft());
         addEffect(new EffectRotateRight());
+
 
         addEffect(new ActionLeftFlyAndCome());
         addEffect(new ActionLeftFlyAndAway());
@@ -62,8 +64,16 @@ public class Palette extends JFrame {
         return new Interval(effect.getDefaultWaitTime(speed), effect.getDefaultInterval(speed));
     }
 
+    public static Interval getInterval(IEffect effect, IntervalSpeed speed, boolean natural) {
+        return new Interval(effect.getDefaultWaitTime(speed), effect.getDefaultInterval(speed), natural);
+    }
+
     public static Interval getInterval(int wait, int interval) {
         return new Interval(wait, interval);
+    }
+
+    public static Interval getInterval(int wait, int interval, boolean natural) {
+        return new Interval(wait, interval, natural);
     }
 
 
@@ -142,7 +152,7 @@ public class Palette extends JFrame {
 
         public void setPosition(Point position) {
             this.position = position;
-            System.out.println("set " + position);
+            //System.out.println("set " + position);
         }
 
     }

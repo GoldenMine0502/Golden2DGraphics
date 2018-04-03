@@ -6,6 +6,7 @@ public class DefaultEffects {
     public static final String ROTATE_LEFT = "Rotate-L";
     public static final String ROTATE_RIGHT = "Rotate-R";
     public static final String SCALE_BIGGER = "Scale-B";
+    public static final String SCALE_SMALLER = "Scale-S";
 
     public static final String LEFT_FLY_AWAY = "ActionFly-LA";
     public static final String LEFT_FLY_COME = "ActionFly-LC";

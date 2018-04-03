@@ -1,4 +1,4 @@
-package com.GoldenMine.test;
+package com.GoldenMine.test.others;
 
 import java.awt.image.BufferedImage;
 

@@ -21,7 +21,7 @@ public class MainV4 {
         ObjectSprite sprite = new ObjectSprite(image); // 스프라이트 생성
         sprite.setPosition(new Point(100, 100));
 
-        pal.addSprite(sprite, false); // 스프라이트 추가하기, transperency = true로 할시 맨처음 시작할때 투명해짐
+        pal.addSprite(sprite, true); // 스프라이트 추가하기, transperency = true로 할시 맨처음 시작할때 투명해짐
 
         pal.startRender(); // 렌더링 시작
 
@@ -31,16 +31,28 @@ public class MainV4 {
             e.printStackTrace();
         }
 
-        for(int i = 0; i < 10; i++) {
+        for(int i = 0; i < 5; i++) {
 
-            sprite.addEffect(DefaultEffects.FADE_IN, IntervalSpeed.NORMAL);
-            sprite.addEffect(DefaultEffects.SCALE_BIGGER, IntervalSpeed.NORMAL);
-            sprite.addEffect(DefaultEffects.ROTATE_RIGHT, IntervalSpeed.NORMAL);
+            sprite.addEffect(DefaultEffects.FADE_IN, IntervalSpeed.NORMAL, true);
+            sprite.addEffect(DefaultEffects.SCALE_BIGGER, IntervalSpeed.NORMAL, true);
+            sprite.addEffect(DefaultEffects.ROTATE_RIGHT, IntervalSpeed.NORMAL, true);
 
             //AffineTransform transform = new AffineTransform();
 
             try {
-                Thread.sleep(6000L);
+                Thread.sleep(4000L);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
+
+            sprite.addEffect(DefaultEffects.FADE_OUT, IntervalSpeed.NORMAL, true);
+            sprite.addEffect(DefaultEffects.SCALE_SMALLER, IntervalSpeed.NORMAL, true);
+            sprite.addEffect(DefaultEffects.ROTATE_LEFT, IntervalSpeed.NORMAL, true);
+
+            //AffineTransform transform = new AffineTransform();
+
+            try {
+                Thread.sleep(4000L);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }

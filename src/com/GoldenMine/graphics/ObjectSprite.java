@@ -115,14 +115,22 @@ public class ObjectSprite {
         return null;
     }
 
-    public void addEffect(String effect, IntervalSpeed speed, Object... parameters) {
-        IEffect iEffect = Palette.getEffect(effect);
-
-        effects.add(new Pair<>(iEffect, new EffectData(Palette.getInterval(iEffect, speed), parameters)));
+    /*public void addEffect(String effect, IntervalSpeed speed, Object... parameters) {
+        addEffect(effect, speed, false, parameters);
     }
 
     public void addEffect(String effect, int wait, int interval, Object... parameters) {
-        effects.add(new Pair<>(Palette.getEffect(effect), new EffectData(new Interval(wait, interval), parameters)));
+        addEffect(effect, wait, interval, false, parameters);
+    }*/
+
+    public void addEffect(String effect, IntervalSpeed speed, boolean natural, Object... parameters) {
+        IEffect iEffect = Palette.getEffect(effect);
+
+        effects.add(new Pair<>(iEffect, new EffectData(Palette.getInterval(iEffect, speed, natural), parameters)));
+    }
+
+    public void addEffect(String effect, int wait, int interval, boolean natural, Object... parameters) {
+        effects.add(new Pair<>(Palette.getEffect(effect), new EffectData(new Interval(wait, interval, natural), parameters)));
     }
 
     public void addWrapper(EffectWrapper wrapper) {
