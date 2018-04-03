@@ -1,7 +1,7 @@
 package com.GoldenMine.wrappers;
 
-import com.GoldenMine.effects.effectsV4.IEffect;
-import com.GoldenMine.graphics.graphicsV4.Palette;
+import com.GoldenMine.effects.IEffect;
+import com.GoldenMine.graphics.Palette;
 import com.GoldenMine.utility.*;
 import javafx.util.Pair;
 

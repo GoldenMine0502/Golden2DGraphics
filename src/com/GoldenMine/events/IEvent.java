@@ -1,7 +1,6 @@
 package com.GoldenMine.events;
 
-import com.GoldenMine.effects.IEffect;
-import com.GoldenMine.graphics.Palette;
+import com.GoldenMine.구버전.graphicsV1.Palette;
 
 public abstract class IEvent {
     Palette palette;

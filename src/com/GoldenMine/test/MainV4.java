@@ -1,20 +1,17 @@
 package com.GoldenMine.test;
 
-import com.GoldenMine.graphics.graphicsV4.ObjectSprite;
-import com.GoldenMine.graphics.graphicsV4.Palette;
-import com.GoldenMine.utility.DefaultActions;
+import com.GoldenMine.graphics.ObjectSprite;
+import com.GoldenMine.graphics.Palette;
 import com.GoldenMine.utility.DefaultEffects;
 import com.GoldenMine.utility.IntervalSpeed;
 import com.GoldenMine.utility.Point;
 
 import java.awt.*;
-import java.awt.geom.AffineTransform;
-import java.awt.image.AffineTransformOp;
 import java.awt.image.BufferedImage;
 
 public class MainV4 {
     public static void main(String[] args) {
-        Palette pal = new Palette("test", new Point(500, 500), 60); // 그림을 그릴 팔레트 생성
+        Palette pal = new Palette("test", new Point(500, 500), 120); // 그림을 그릴 팔레트 생성
 
         BufferedImage image = new BufferedImage(300, 300, BufferedImage.TYPE_INT_ARGB); // example 사진 하나 생성
         Graphics g = image.getGraphics();
@@ -40,10 +37,10 @@ public class MainV4 {
             sprite.addEffect(DefaultEffects.SCALE_BIGGER, IntervalSpeed.NORMAL);
             sprite.addEffect(DefaultEffects.ROTATE_RIGHT, IntervalSpeed.NORMAL);
 
-            AffineTransform transform = new AffineTransform();
+            //AffineTransform transform = new AffineTransform();
 
             try {
-                Thread.sleep(60000L);
+                Thread.sleep(6000L);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }

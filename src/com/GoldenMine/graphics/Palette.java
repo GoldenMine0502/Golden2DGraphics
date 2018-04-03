@@ -1,54 +1,135 @@
 package com.GoldenMine.graphics;
 
-import com.GoldenMine.actions.IAction;
-import com.GoldenMine.effects.IEffect;
-import com.GoldenMine.events.IEvent;
+import com.GoldenMine.effects.*;
 import com.GoldenMine.thread.threadAPI.APISingleThread;
 import com.GoldenMine.thread.threadAPI.APIThreadHandler;
 import com.GoldenMine.thread.threadAPI.unit.TimeUnit;
+import com.GoldenMine.utility.EffectData;
 import com.GoldenMine.utility.Interval;
+import com.GoldenMine.utility.IntervalSpeed;
 import com.GoldenMine.utility.Point;
+import com.GoldenMine.wrappers.EffectWrapper;
 import javafx.util.Pair;
+
+import java.util.HashMap;
+import java.util.List;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
 
 public class Palette extends JFrame {
-    //Effect Info
-    //enabled effect
-    //event effect
-    //
-    //BufferedImage paletteImage;
-
     /*
-    getCurrentRGB()
-    List<ObjectSprite>에서 이미지의 모든 픽셀들의 합을 구한다.
-    ObjectSprite.getPosition().add(currentpixel) 최종 좌표
+    이펙트와 액션 통합
 
+    새로운 이펙트 만들기
+    +
+    이펙트에서 Point를 리턴하는데 null이라면 이펙트라고 판단함
 
      */
 
+    private static HashMap<String, IEffect> effects = new HashMap<>();
+
+    static {
+        addEffect(new EffectFadeIn());
+        addEffect(new EffectFadeOut());
+        addEffect(new EffectScaleBigger());
+        addEffect(new EffectRotateLeft());
+        addEffect(new EffectRotateRight());
+
+        addEffect(new ActionLeftFlyAndCome());
+        addEffect(new ActionLeftFlyAndAway());
+        addEffect(new ActionTopFlyAndCome());
+        addEffect(new ActionTopFlyAndAway());
+        addEffect(new ActionRightFlyAndCome());
+        addEffect(new ActionRightFlyAndAway());
+        addEffect(new ActionBottomFlyAndCome());
+        addEffect(new ActionBottomFlyAndAway());
+    }
+
+
+    public static void addEffect(IEffect effect) {
+        effects.put(effect.getName(), effect);
+    }
+
+    public static IEffect getEffect(String effect) {
+        return effects.get(effect);
+    }
+
+    public static Interval getInterval(IEffect effect, IntervalSpeed speed) {
+        return new Interval(effect.getDefaultWaitTime(speed), effect.getDefaultInterval(speed));
+    }
+
+    public static Interval getInterval(int wait, int interval) {
+        return new Interval(wait, interval);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    private List<ObjectSprite> sprites = new ArrayList<>();
+    private HashMap<ObjectSprite, SpriteData> spriteConfigs = new HashMap<>();
+
+    private APISingleThread thread;
+
+    private BufferedImage buffer;
+    private Graphics bufferGraphics;
+
+    private Graphics mainGraphics;
+
+    private boolean update;
+
+    private List<Integer> enabledNumbers = new ArrayList<>();
+
+    private Point paletteSize;
+
+    public void addSprite(ObjectSprite sprite) {
+        addSprite(sprite, false);
+    }
+
+    public void addSprite(ObjectSprite sprite, boolean transperency) {
+        sprites.add(sprite);
+        spriteConfigs.put(sprite, new SpriteData(sprite, transperency));
+    }
+
     class SpriteData {
         private List<SpriteElementData> elements = new ArrayList<>();
-        private Point position;
+        private Point position = new Point();
+        //private List<EffectWrapper> wrappers = new ArrayList<>();
+        //private List<EffectWrapper> wrappers = new ArrayList<>();
 
-        public SpriteData(ObjectSprite sprite, boolean transparency) {
+        SpriteData(ObjectSprite sprite, boolean transparency) {
             List<BufferedImage> originalImgs = sprite.getImages();
 
-            for(int i = 0; i < originalImgs.size(); i++) {
-                elements.add(new SpriteElementData(originalImgs.get(i), transparency));
+            for (BufferedImage originalImg : originalImgs) {
+                elements.add(new SpriteElementData(originalImg, transparency));
             }
 
-            Point toCpy = sprite.getPosition();
-
-            position = new Point(toCpy.getX(), toCpy.getY());
-        /* copy all of original images */
+            position = new Point(sprite.getPosition().getX(), sprite.getPosition().getY());
         }
 
         public List<SpriteElementData> getSpriteElements() {
@@ -61,24 +142,28 @@ public class Palette extends JFrame {
 
         public void setPosition(Point position) {
             this.position = position;
+            System.out.println("set " + position);
         }
+
     }
 
     class SpriteElementData {
         private BufferedImage copied;
         private Graphics2D graphics2D;
+        private AffineTransform transform;
 
-        public SpriteElementData(BufferedImage originalImg, boolean transparency) {
+        SpriteElementData(BufferedImage originalImg, boolean transparency) {
             Graphics2D g2d = buffer.createGraphics();
 
             copied = new BufferedImage(originalImg.getWidth(), originalImg.getHeight(), BufferedImage.TYPE_INT_ARGB);
             copied.getGraphics().drawImage(originalImg, 0, 0, null);
 
-            if(transparency) {
+            if (transparency) {
                 g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0));
             }
 
             this.graphics2D = g2d;
+            transform = g2d.getTransform();
         }
 
         public BufferedImage getImage() {
@@ -88,293 +173,186 @@ public class Palette extends JFrame {
         public Graphics2D getGraphics() {
             return graphics2D;
         }
+
+        public AffineTransform getTransform() {
+            return transform;
+        }
+
+        public void setTransform(AffineTransform transform) {
+            this.transform = transform;
+        }
     }
-
-
-    BufferedImage buffer;
-    //int nextBufferPoint = 0;
-
-    List<ObjectSprite> sprites = new ArrayList<>();
-    //HashMap<ObjectSprite, List<Pair<BufferedImage, Graphics2D>>> spriteImages = new HashMap<>();
-    //HashMap<ObjectSprite, Point> spritePoints = new HashMap<>();
-
-    HashMap<ObjectSprite, SpriteData> spriteConfigs = new HashMap<>();
-
-    //List<IEvent> events = new ArrayList<IEvent>();
-
-    APISingleThread singleThread;
-
-    boolean started = false;
-    boolean update = false;
 
     public Palette(String title, Point size, int fps) {
         setTitle(title);
         setSize(size.getXInt(), size.getYInt());
+
         setVisible(true);
 
-        /* add listeners */
+        paletteSize = new Point(size.getX(), size.getY());
 
 
-
-        Graphics mainGraphic = getGraphics();
         buffer = new BufferedImage(size.getXInt(), size.getYInt(), BufferedImage.TYPE_INT_ARGB);
+        bufferGraphics = buffer.getGraphics();
+
+        mainGraphics = getGraphics();
 
 
-
-        singleThread = new APISingleThread(TimeUnit.FPS, fps, new APIThreadHandler() {
+        thread = new APISingleThread(TimeUnit.FPS, fps, new APIThreadHandler() {
             @Override
             public void onThreadExecute() throws InterruptedException {
-                /* rendering */
-                Graphics bufferGraphic = buffer.getGraphics();
-                bufferGraphic.clearRect(0, 0, size.getXInt(), size.getYInt());
-                //bufferGraphic.fillRect(0,0,size.getXInt(), size.getYInt());
-                for (ObjectSprite sprite : sprites) {
-                    SpriteData spriteData = spriteConfigs.get(sprite);
-                    SpriteElementData elementData = spriteData.getSpriteElements().get(sprite.getCurrentImagePosition());
+                /*
+                여기에 넘버 기반 이펙트 실행 메소드를 넣는다.
+                 */
+                bufferGraphics.clearRect(0, 0, buffer.getWidth(), buffer.getHeight());
 
-                    List<Pair<IEffect, Interval>> effects = sprite.enabledEffects;
-                    List<Pair<IAction, Interval>> actions = sprite.enabledActions;
-                    //List<Pair<BufferedImage, Graphics2D>> imageData = elementData.get(sprite);
+                for(ObjectSprite objectSprite : sprites) {
+                    AffineTransform transform = new AffineTransform();
 
-                    //Pair<BufferedImage, Graphics2D> imagePair = imageData.get(sprite.getCurrentImagePosition());
-                    BufferedImage img = elementData.getImage();
+                    SpriteData data = spriteConfigs.get(objectSprite);
 
-                    Graphics2D g2dimg = elementData.getGraphics();
+                    Point currentPoint = data.getPosition();
 
-                    //Graphics bufferGraphicInternal = imagePair.getValue();
+                    handleList(objectSprite, objectSprite.effects, currentPoint, transform);
 
-                    /* 이펙트 적용 */
-                    for (int i = 0; i < effects.size(); i++) {
-                        Pair<IEffect, Interval> effectPair = effects.get(i);
-
-                        IEffect effect = effectPair.getKey();
-                        Interval interval = effectPair.getValue();
-
-                        //기다림이 끝났으면
-                        if (interval.getCompletedWait()) {
-                            //틱 계산, 시간이 다 되었으면
-                            if (interval.addTick()) {
-                                //Graphics g = img.getGraphics();
-
-                                //g.drawImage(effect.editImage(size, sprite.getPosition(), sprite.getCurrentImage(), img, g, interval.getIntervalPercent()), 0, 0, null);
-
-                                //제거
-                                effects.remove(i);
-                                i--;
-                            } else {
-                                // 안끝났으면 이펙트 효과 적용
-
-                                //System.out.println(effects.size());
-                                //.set(sprite.getCurrentImagePosition(), new Pair<>(effect.editImage(size, sprite.getPosition(), sprite.getCurrentImage(), img, imagePair.getValue(), interval.getIntervalPercent()), imagePair.getValue()));
-                                effect.editImage(size, sprite.getPosition(), sprite.getCurrentImage(), img, g2dimg, interval.getIntervalPercent());
-                            }
-                        } else {
-                            //안끝났으면 끝나도록 유도함
-                            interval.addWait();
-                        }
+                    for(EffectWrapper wrapper : objectSprite.wrappers) {
+                        handleList(objectSprite, wrapper.getEffects(), currentPoint, transform);
                     }
+                    //System.out.println("current " + currentPoint);
+                    //if(data!=null && data.getPosition()!=null)
+                    //    System.out.println(data.getPosition().getXInt());
 
-                    /* 액션 적용 */
-                    if (actions.size() > 0) {
-                        Pair<IAction, Interval> actionPair = actions.get(0);
-                        IAction action = actionPair.getKey();
-                        Interval interval = actionPair.getValue();
-
-                        if (interval.getCompletedWait()) {
-                            //틱 계산, 시간이 다 되었으면
-                            if (interval.addTick()) {
-                                //제거
-                                actions.remove(0);
-                            } else {
-                                // 안끝났으면 액션 효과 적용
-                                spriteData.setPosition(action.getNextPosition(size, sprite.getPosition(), spriteData.getPosition(), sprite.getCurrentImage(), interval.getIntervalPercent()));
-                                //spritePoints.put(sprite, action.getNextPosition(size, sprite.getPosition(), spritePoints.get(sprite), sprite.getCurrentImage(), interval.getIntervalPercent()));
-                            }
-                        } else {
-                            //안끝났으면 끝나도록 유도함
-                            interval.addWait();
-                        }
+                    if(objectSprite.effects.size()>0) {
+                        SpriteElementData elementData = spriteConfigs.get(objectSprite).getSpriteElements().get(objectSprite.getCurrentImagePosition());
+                        elementData.setTransform(transform);
+                        //System.out.println(data.getPosition());
                     }
-
-                    Point spritePoint = spriteData.getPosition();
-
-                    //AffineTransform tr = g2dimg.getTransform();
-                    //tr.setToScale(0.5, 0.5);
-                    //g2dimg.setTransform(tr);
-                    g2dimg.drawImage(elementData.getImage(), spritePoint.getXInt(), spritePoint.getYInt(), null);
-                    //imagePair.getValue().drawImage(spriteImages.get(sprite).get(sprite.getCurrentImagePosition()).getKey(), spritePoint.getXInt(), spritePoint.getYInt(), null);
-                    //스프라이트의 활성화된 이벤트를 얻고
-                    //이벤트에서 지난 tick을 계산한다.
-                    /*
-                    HashMap<IEffect, Interval> effects = sprite.enabledEffects;
-                    List<IEffect> removingEffects = new ArrayList<>();
-
-                    // 이미지 이벤트에 따라 수정
-                    for(IEffect effect : effects.keySet()) {
-                        Interval interval = effects.get(effect);
-                        if(interval.getCompletedWait()) {
-                            if(interval.addTick()) {
-                                removingEffects.add(effect);
-                            } else {
-                                BufferedImage img = spriteImages.get(sprite);
-                                effect.editImage(sprite.getCurrentImage(), img, img.getGraphics(), interval.getIntervalPercent());
-                     //System.out.println(new Color(spriteImages.get(sprite).getRGB(0,0)).getAlpha());
-                            }
-                        } else {
-                            interval.addWait();
-                        }
-                    }
-
-                    HashMap<IAction, Interval> actions = sprite.enabledActions;
-                    List<IAction> removingActions = new ArrayList<>();
-
-                    // 이미지 액션에 따라 위치 수정
-                    for(IAction action : actions.keySet()) {
-                        Interval interval = actions.get(action);
-                        if(interval.getCompletedWait()) {
-                            if(interval.addTick()) {
-                                removingActions.add(action);
-                            } else {
-                                spritePoints.put(sprite, action.getNextPosition(size, sprite.point, sprite.getCurrentImage(), interval.getIntervalPercent()));
-                            }
-                        } else {
-                            interval.addWait();
-                        }
-                    }
-
-                    // 완료된 이펙트 제거
-                    for(IEffect effect : removingEffects) {
-                        effects.remove(effect);
-                    }
-
-                    // 완료된 액션 제거
-                    for(IAction action : removingActions) {
-                        actions.remove(action);
-                    }*/
-
-
                 }
 
-                /* dispose */
-                /* copy */
-                //if(mainGraphic!=null)
-                    mainGraphic.drawImage(buffer, 0, 0, null);
+                for(ObjectSprite sprite : sprites) {
+                    SpriteData data = spriteConfigs.get(sprite);
+                    SpriteElementData elementData = data.getSpriteElements().get(sprite.getCurrentImagePosition());
+
+                    Graphics2D bufferGraphics = elementData.getGraphics();
+
+                    bufferGraphics.setTransform(elementData.getTransform());
+                    Point position = data.getPosition();
+                    //if(position!=null) {
+                        bufferGraphics.drawImage(elementData.getImage(), position.getXInt(), position.getYInt(), null);
+                    //}
+                }
+
+                writeInMain();
 
                 if (update) {
-                    singleThread.pause();
+                    thread.pause();
                     update = false;
                 }
-            }
+                /*
+                for(Wrappers) {
+                    Wrapper wrapper;
 
-            @Override
-            public void onKeepUp() {
+                    for(int i = 0 ; i < wrapper.effect.size(); i++) {
+                        IEffect effect = wrapper.effect.get(i);
+                        if(effect.isWait())
+                            if(~~~) {
 
-            }
+                            }
 
-            @Override
-            public void onInterrupt() {
 
-            }
+                    }
+                }
+                또는 Wrapper의 경우 Wrapper를 통합적으로 Tick을 관리하는 방법도 있음
 
-            @Override
-            public void onStart() {
-
-            }
-
-            @Override
-            public void onPause() {
-
-            }
-
-            @Override
-            public void onResume() {
-
-            }
-
-            @Override
-            public void onStop() {
-
+                 */
             }
         });
-        //graphics = panel.getGraphics();
+
 
     }
 
-    public void writeImage(ObjectSprite sprite) {
-
+    public void writeInMain() {
+        mainGraphics.drawImage(buffer, 0, 0, null);
     }
 
-    @Override
-    public void paint(Graphics g) {
-        super.paint(g);
+    public void handleList(ObjectSprite objectSprite, List<Pair<IEffect, EffectData>> effects, Point point, AffineTransform toApply) {
+        for(int i = 0; i < effects.size(); i++) {
+            Pair<IEffect, EffectData> effectPair = effects.get(i);
+            IEffect effect = effectPair.getKey();
+            Interval interval = effectPair.getValue().getInterval();
+            Object[] parameter = effectPair.getValue().getParameters();
 
-        //g.drawImage(buffer, 0, 0, null);
+            if(handleInterval(interval)) {
+                SpriteData spriteData = spriteConfigs.get(objectSprite);
+                SpriteElementData elementData = spriteData.getSpriteElements().get(objectSprite.getCurrentImagePosition());
+
+                //AffineTransform past = elementData.getTransform();
+                Point result =  effect.editImage(paletteSize, objectSprite.getPosition(), point,
+                        objectSprite.getCurrentImage(), elementData.getImage(), elementData.getGraphics(),
+                        toApply, elementData.getTransform(), interval.getIntervalPercent(), parameter);
+
+                point.setX(result.getX());
+                point.setY(result.getY());
+                //point = handleEffect(objectSprite, effect, point, interval.getIntervalPercent(), toApply, parameter);
+            } else {
+                objectSprite.effects.remove(i);
+                i--;
+            }
+        }
+        //spriteConfigs.get(objectSprite).setPosition(point);
+        //return point;
+    }
+
+    public boolean handleInterval(Interval interval) {
+        if(interval.addWait()) {
+            if(interval.addTick()) {
+                return false;
+            } else {
+
+            }
+        }
+
+        return true;
+    }
+
+    public void handleEffect(ObjectSprite sprite, IEffect effect, Point point, double percent, AffineTransform toApplyTransform, Object... parameters) {
+        SpriteData spriteData = spriteConfigs.get(sprite);
+        SpriteElementData elementData = spriteData.getSpriteElements().get(sprite.getCurrentImagePosition());
+
+        //AffineTransform past = elementData.getTransform();
+        Point result =  effect.editImage(paletteSize, sprite.getPosition(), point,
+                sprite.getCurrentImage(), elementData.getImage(), elementData.getGraphics(),
+                toApplyTransform, elementData.getTransform(), percent, parameters);
+
+        //elementData.setTransform(toApplyTransform);
+        
+        //past.concatenate(elementData.getTransform());
+
+        //return result;
+    }
+
+    public void startRender() {
+        thread.start();
+    }
+
+    public void pauseRender() {
+        thread.pause();
+    }
+
+    public void stopRender() {
+        thread.stop();
+    }
+
+    public void ResumeRender() {
+        thread.resume();
     }
 
     public void updateRender() {
         update = true;
-        if (started) {
-            singleThread.start();
-        } else {
-            singleThread.resume();
-        }
+        thread.resume();
     }
 
-    public void addSprite(ObjectSprite objectSprite) {
-        addSprite(objectSprite, true);
-    }
+    public void enableEffects(int number) {
 
-    public void addSprite(ObjectSprite objSprite, boolean transparent) {
-        sprites.add(objSprite);
-
-        /* copy all of original images */
-        spriteConfigs.put(objSprite, new SpriteData(objSprite, transparent));
-        /*List<BufferedImage> originalImgs = objSprite.getImages();
-        List<Pair<BufferedImage, Graphics2D>> imgs = new LinkedList<>();
-
-        for(int i = 0; i < originalImgs.size(); i++) {
-            BufferedImage originalImg = originalImgs.get(i);
-
-            Graphics2D g2d = buffer.createGraphics();
-
-            BufferedImage img = new BufferedImage(originalImg.getWidth(), originalImg.getHeight(), BufferedImage.TYPE_INT_ARGB);
-            img.getGraphics().drawImage(objSprite.getCurrentImage(), 0, 0, null);
-            if(transparent) {
-                g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0));
-                //img.getGraphics().clearRect(0, 0, objSprite.getCurrentImage().getWidth(), objSprite.getCurrentImage().getHeight());
-            }
-
-            imgs.add(new Pair<>(img, g2d));
-        }*/
-        //spriteImages.put(objSprite, imgs);
-        //spritePoints.put(objSprite, new Point(objSprite.getPosition().getX(), objSprite.getPosition().getY()));
-    }
-
-    public void startRender() {
-        started = true;
-        singleThread.start();
-    }
-
-    public void pauseRender() {
-        singleThread.pause();
-    }
-
-    public void resumeRender() {
-        singleThread.resume();
-    }
-
-    public void stopRender() {
-        singleThread.stop();
-    }
-
-    public void invokeEvent(IEvent event) {
-        for(ObjectSprite sprite : sprites) {
-            sprite.enableEventEffects(event);
-        }
-    }
-
-    public void stopProgram() {
-        stopRender();
-        System.exit(0);
     }
 }

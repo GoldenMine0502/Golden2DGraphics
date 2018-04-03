@@ -1,45 +1,45 @@
 package com.GoldenMine.effects;
 
+import com.GoldenMine.utility.IntervalSpeed;
 import com.GoldenMine.utility.Point;
-import javafx.util.Pair;
+import com.GoldenMine.utility.UtilityFade;
 
 import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
 public class EffectScaleBigger implements IEffect {
+
     @Override
-    public int getFPS() {
+    public String getName() {
+        return "Scale-B";
+    }
+
+    @Override
+    public int getDefaultWaitTime(IntervalSpeed speed) {
         return 0;
     }
 
     @Override
-    public int getIntervalMS() {
-        return 0;
+    public int getDefaultInterval(IntervalSpeed speed) {
+        return 200-40*speed.getSpeed();
     }
 
     @Override
-        public Pair<Point, Point> editImage(Point paletteSize, Point spritePos, BufferedImage original, BufferedImage changed, Graphics changedGraphics, double percent) {
-            if(changedGraphics instanceof Graphics2D) {
-                /* error */
+    public Point editImage(Point paletteSize, Point imagePosition, Point imagePositionChanged, BufferedImage original, BufferedImage changed, Graphics2D graphics2D, AffineTransform transform, AffineTransform changedTransform, double percent, Object... parameters) {
+        double scale = percent / 10000D;
 
-                Graphics2D g2d = (Graphics2D) changedGraphics;
+        //AffineTransform form = new AffineTransform();
+        transform.scale(scale, scale);
 
-                double scale = percent/10000D;
+        //transform.concatenate(form);
 
-                AffineTransform trans = g2d.getTransform();
-                //trans.get
-                trans.setToScale(scale, scale);
 
-                //AffineTransform trans = new AffineTransform();
-                //trans.translate(spritePos.getXInt(), spritePos.getYInt());
-                //trans.concatenate( g2d.getTransform() );
-                //trans.setToScale(scale, scale);
-                //g2d.getTransform().setToScale(scale, scale);
-                g2d.setTransform(trans);
-                //System.out.println(scale);
-            }
+        //System.out.println(imagePosition.getXInt());
 
-            return null;
+        //System.out.println(scale);
+
+        return new Point(UtilityFade.getResizedScalePoint(imagePositionChanged.getXInt(), changed.getWidth(), scale)
+                , UtilityFade.getResizedScalePoint(imagePositionChanged.getYInt(), changed.getHeight(), scale));
     }
 }

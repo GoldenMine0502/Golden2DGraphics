@@ -1,6 +1,6 @@
 package com.GoldenMine.events;
 
-import com.GoldenMine.graphics.Palette;
+import com.GoldenMine.구버전.graphicsV1.Palette;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
