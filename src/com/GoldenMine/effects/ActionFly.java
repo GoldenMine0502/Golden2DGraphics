@@ -7,7 +7,7 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 
-public abstract class ActionFly implements IEffect {
+public abstract class ActionFly implements IEffect, PositionChangable {
     /*
     private static List<Double> regex = new ArrayList<>(); //거리가 100일 때, 가야할 거리
 

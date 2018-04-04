@@ -1,24 +1,25 @@
 package com.GoldenMine.graphics;
 
 import com.GoldenMine.effects.*;
-import com.GoldenMine.thread.threadAPI.APISingleThread;
+import com.GoldenMine.events.InvokeEvent;
+import com.GoldenMine.thread.threadAPI.APIMultiThread;
 import com.GoldenMine.thread.threadAPI.APIThreadHandler;
 import com.GoldenMine.thread.threadAPI.unit.TimeUnit;
 import com.GoldenMine.utility.EffectData;
 import com.GoldenMine.utility.Interval;
 import com.GoldenMine.utility.IntervalSpeed;
 import com.GoldenMine.utility.Point;
-import com.GoldenMine.wrappers.EffectWrapper;
 import javafx.util.Pair;
-
-import java.util.HashMap;
-import java.util.List;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class Palette extends JPanel {
     /*
@@ -77,34 +78,10 @@ public class Palette extends JPanel {
     }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     private List<ObjectSprite> sprites = new ArrayList<>();
     private HashMap<ObjectSprite, SpriteData> spriteConfigs = new HashMap<>();
 
-    private APISingleThread thread;
+    private APIMultiThread thread;
 
     private BufferedImage buffer;
     private Graphics bufferGraphics;
@@ -126,13 +103,27 @@ public class Palette extends JPanel {
         spriteConfigs.put(sprite, new SpriteData(sprite, transperency));
     }
 
+    public void removeSprite(int index) {
+        spriteConfigs.remove(sprites.remove(index));
+    }
+
+    public void removeSprite(ObjectSprite sprite) {
+        sprites.remove(sprite);
+        spriteConfigs.remove(sprite);
+    }
+
     class SpriteData {
         private List<SpriteElementData> elements = new ArrayList<>();
         private Point position = new Point();
-        //private List<EffectWrapper> wrappers = new ArrayList<>();
-        //private List<EffectWrapper> wrappers = new ArrayList<>();
+        private Point positionAllowed = new Point();
+        private Graphics2D graphics2D;
+        private AffineTransform transform;
 
         SpriteData(ObjectSprite sprite, boolean transparency) {
+            Graphics2D g2d = buffer.createGraphics();
+            this.graphics2D = g2d;
+
+
             List<BufferedImage> originalImgs = sprite.getImages();
 
             for (BufferedImage originalImg : originalImgs) {
@@ -140,6 +131,18 @@ public class Palette extends JPanel {
             }
 
             position = new Point(sprite.getPosition().getX(), sprite.getPosition().getY());
+            positionAllowed = new Point(position.getX(), position.getY());
+
+            transform = g2d.getTransform();
+        }
+
+
+        public AffineTransform getTransform() {
+            return transform;
+        }
+
+        public void setTransform(AffineTransform transform) {
+            this.transform = transform;
         }
 
         public List<SpriteElementData> getSpriteElements() {
@@ -150,17 +153,25 @@ public class Palette extends JPanel {
             return position;
         }
 
-        public void setPosition(Point position) {
-            this.position = position;
-            //System.out.println("set " + position);
+        public Point getAllowedPosition() {
+            return positionAllowed;
         }
 
+        public void setPosition(Point position) {
+            this.position = position;
+        }
+
+        public void setAllowedPosition(Point allowedPosition) {
+            this.positionAllowed = allowedPosition;
+        }
+
+        public Graphics2D getGraphics() {
+            return graphics2D;
+        }
     }
 
     class SpriteElementData {
         private BufferedImage copied;
-        private Graphics2D graphics2D;
-        private AffineTransform transform;
 
         SpriteElementData(BufferedImage originalImg, boolean transparency) {
             Graphics2D g2d = buffer.createGraphics();
@@ -172,30 +183,17 @@ public class Palette extends JPanel {
                 g2d.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, 0));
             }
 
-            this.graphics2D = g2d;
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+            g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                    RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
-            //g2d.setRenderingHints(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-            g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-
-            transform = g2d.getTransform();
         }
 
         public BufferedImage getImage() {
             return copied;
         }
 
-        public Graphics2D getGraphics() {
-            return graphics2D;
-        }
-
-        public AffineTransform getTransform() {
-            return transform;
-        }
-
-        public void setTransform(AffineTransform transform) {
-            this.transform = transform;
-        }
     }
 
     @Override
@@ -205,7 +203,10 @@ public class Palette extends JPanel {
     }
 
     public Palette(Point size, int fps) {
-        //setTitle(title);
+        this(size, fps, 1);
+    }
+
+    public Palette(Point size, int fps, int time) {
         setSize(size.getXInt(), size.getYInt());
 
         setVisible(true);
@@ -219,53 +220,63 @@ public class Palette extends JPanel {
         mainGraphics = getGraphics();
 
 
-        thread = new APISingleThread(TimeUnit.FPS, fps, new APIThreadHandler() {
+        thread = new APIMultiThread(TimeUnit.FPS, fps, time, new APIThreadHandler() {
+
             @Override
             public void onThreadExecute() throws InterruptedException {
                 /*
                 여기에 넘버 기반 이펙트 실행 메소드를 넣는다.
                  */
-                bufferGraphics.clearRect(0, 0, buffer.getWidth(), buffer.getHeight());
-
-                for(ObjectSprite objectSprite : sprites) {
-                    AffineTransform transform = new AffineTransform();
-                    Point position = new Point(objectSprite.getPosition().getX(), objectSprite.getPosition().getY());
-                    SpriteData data = spriteConfigs.get(objectSprite);
-
-
-
-                    //Point currentPoint = data.getPosition();
-
-                    handleList(objectSprite, objectSprite.effects, position, transform);
-
-                    for(EffectWrapper wrapper : objectSprite.wrappers) {
-                        handleList(objectSprite, wrapper.getEffects(), position, transform);
-                    }
-                    //System.out.println("current " + currentPoint);
-                    //if(data!=null && data.getPosition()!=null)
-                    //    System.out.println(data.getPosition().getXInt());
-
-                    if(objectSprite.effects.size()>0) {
-                        //SpriteData spritedata = spriteConfigs.get(objectSprite);
-                        SpriteElementData elementData = data.getSpriteElements().get(objectSprite.getCurrentImagePosition());
-                        elementData.setTransform(transform);
-                        data.setPosition(position);
-                        //System.out.println(data.getPosition());
-                    }
+                /*if(lastDimension==null) {
+                    lastDimension = getSize();
                 }
 
-                for(ObjectSprite sprite : sprites) {
+                Dimension d = getSize();
+                if(lastDimension.height!=d.height || lastDimension.width!=d.width) {
+                    buffer.flush();
+                    buffer = new BufferedImage(d.width, d.height, BufferedImage.TYPE_INT_ARGB);
+                }
+
+                Point magnification = new Point(d.getWidth()/size.getX(), d.getHeight()/size.getY());*/
+
+
+                bufferGraphics.clearRect(0, 0, buffer.getWidth(), buffer.getHeight());
+
+                for (ObjectSprite objectSprite : sprites) {
+                    AffineTransform transform = new AffineTransform();
+                    Point position = new Point(objectSprite.getPosition().getX(), objectSprite.getPosition().getY());
+
+                    SpriteData data = spriteConfigs.get(objectSprite);
+                    Point positionAllowed = new Point(data.getAllowedPosition().getX(), data.getAllowedPosition().getY());
+
+
+                    handleList(objectSprite, objectSprite.effects, position, positionAllowed, transform);
+
+                    /*
+                    for (EffectWrapper wrapper : objectSprite.wrappers) {
+                        handleList(objectSprite, wrapper.getEffects(), position, transform);
+                    }*/
+
+                    if (objectSprite.effects.size() > 0) {
+                        //SpriteElementData elementData = data.getSpriteElements().get(objectSprite.getCurrentImagePosition());
+                        data.setTransform(transform);
+                        data.setPosition(position);
+                    }
+                    data.setAllowedPosition(positionAllowed);
+                }
+
+
+                for (ObjectSprite sprite : sprites) {
                     SpriteData data = spriteConfigs.get(sprite);
                     SpriteElementData elementData = data.getSpriteElements().get(sprite.getCurrentImagePosition());
 
-                    Graphics2D bufferGraphics = elementData.getGraphics();
+                    Graphics2D bufferGraphics = data.getGraphics();
 
-                    bufferGraphics.setTransform(elementData.getTransform());
+                    bufferGraphics.setTransform(data.getTransform());
                     Point position = data.getPosition();
-                    //if(position!=null) {
 
-                        bufferGraphics.drawImage(elementData.getImage(), position.getXInt(), position.getYInt(), null);
-                    //}
+                    bufferGraphics.drawImage(elementData.getImage(), (int) (position.getXInt()), (int) (position.getYInt()), null);
+
                 }
 
                 writeInMain();
@@ -291,35 +302,74 @@ public class Palette extends JPanel {
                 또는 Wrapper의 경우 Wrapper를 통합적으로 Tick을 관리하는 방법도 있음
 
                  */
+
             }
         });
 
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                java.awt.Point mouseP = e.getPoint();
+                for (int i = sprites.size() - 1; i >= 0; i--) {
+                    ObjectSprite sprite = sprites.get(i);
+                    SpriteData data = spriteConfigs.get(sprite);
 
+                    if (sprite instanceof InvokeEvent) {
+                        Point spriteP = data.getAllowedPosition();
+                        Point spriteP2 = new Point(spriteP.getX() + sprite.getCurrentImage().getWidth(), spriteP.getY() + sprite.getCurrentImage().getHeight());
+
+
+                        if (spriteP.getX() <= mouseP.getX() && spriteP.getY() <= mouseP.getY()) {
+                            if (spriteP2.getX() >= mouseP.getX() && spriteP2.getY() >= mouseP.getY()) {
+                                ((InvokeEvent) sprite).onClick(new Point(mouseP.getX(), mouseP.getY()), true);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+
+                java.awt.Point p = e.getPoint();
+
+                for (ObjectSprite sprite : sprites) {
+                    if (sprite instanceof InvokeEvent) {
+                        ((InvokeEvent) sprite).onClick(new Point(p.getX(), p.getY()), false);
+                    }
+                }
+                //checkClicked(e.getPoint(), false);
+            }
+        });
     }
 
     public void writeInMain() {
         mainGraphics.drawImage(buffer, 0, 0, null);
     }
 
-    public void handleList(ObjectSprite objectSprite, List<Pair<IEffect, EffectData>> effects, Point point, AffineTransform toApply) {
+    public void handleList(ObjectSprite objectSprite, List<Pair<IEffect, EffectData>> effects, Point point, Point pointAllowed, AffineTransform toApply) {
         Point result = point;
 
-        for(int i = 0; i < effects.size(); i++) {
+        for (int i = 0; i < effects.size(); i++) {
             Pair<IEffect, EffectData> effectPair = effects.get(i);
             IEffect effect = effectPair.getKey();
             Interval interval = effectPair.getValue().getInterval();
             Object[] parameter = effectPair.getValue().getParameters();
 
-            if(handleInterval(interval)) {
+            if (handleInterval(interval)) {
                 SpriteData spriteData = spriteConfigs.get(objectSprite);
                 SpriteElementData elementData = spriteData.getSpriteElements().get(objectSprite.getCurrentImagePosition());
 
-                //AffineTransform past = elementData.getTransform();
-                result =  effect.editImage(paletteSize, objectSprite.getPosition(), result,
-                        objectSprite.getCurrentImage(), elementData.getImage(), elementData.getGraphics(),
-                        toApply, elementData.getTransform(), interval.getIntervalPercent(), parameter);
-                //System.out.println(result);
-                //point = handleEffect(objectSprite, effect, point, interval.getIntervalPercent(), toApply, parameter);
+
+                result = effect.editImage(paletteSize, objectSprite.getPosition(), result,
+                        objectSprite.getCurrentImage(), elementData.getImage(), spriteData.getGraphics(),
+                        toApply, spriteData.getTransform(), interval.getIntervalPercent(), parameter);
+
+                if(effect instanceof PositionChangable) {
+                    pointAllowed.setX(result.getX());
+                    pointAllowed.setY(result.getY());
+                }
             } else {
                 effects.remove(i);
                 i--;
@@ -328,13 +378,11 @@ public class Palette extends JPanel {
 
         point.setX(result.getX());
         point.setY(result.getY());
-        //spriteConfigs.get(objectSprite).setPosition(point);
-        //return point;
     }
 
     public boolean handleInterval(Interval interval) {
-        if(interval.addWait()) {
-            if(interval.addTick()) {
+        if (interval.addWait()) {
+            if (interval.addTick()) {
                 return false;
             } else {
 
@@ -342,22 +390,6 @@ public class Palette extends JPanel {
         }
 
         return true;
-    }
-
-    public void handleEffect(ObjectSprite sprite, IEffect effect, Point point, double percent, AffineTransform toApplyTransform, Object... parameters) {
-        SpriteData spriteData = spriteConfigs.get(sprite);
-        SpriteElementData elementData = spriteData.getSpriteElements().get(sprite.getCurrentImagePosition());
-
-        //AffineTransform past = elementData.getTransform();
-        Point result =  effect.editImage(paletteSize, sprite.getPosition(), point,
-                sprite.getCurrentImage(), elementData.getImage(), elementData.getGraphics(),
-                toApplyTransform, elementData.getTransform(), percent, parameters);
-
-        //elementData.setTransform(toApplyTransform);
-        
-        //past.concatenate(elementData.getTransform());
-
-        //return result;
     }
 
     public void startRender() {

@@ -5,7 +5,6 @@ import com.GoldenMine.utility.EffectData;
 import com.GoldenMine.utility.Interval;
 import com.GoldenMine.utility.IntervalSpeed;
 import com.GoldenMine.utility.Point;
-import com.GoldenMine.wrappers.EffectWrapper;
 import javafx.util.Pair;
 
 import javax.imageio.ImageIO;
@@ -42,24 +41,8 @@ public class ObjectSprite {
 
     protected List<BufferedImage> images = new ArrayList<BufferedImage>();
 
-    public ObjectSprite(BufferedImage image) {
-        addImage(image);
-    }
-
-    public ObjectSprite(File file) {
-        this(getImage(file));
-    }
-
-    public ObjectSprite(String route) {
-        this(new File(route));
-    }
-
-    public ObjectSprite(Font font, String str, Color color) {
-        this(makeImageFromText(font, str, color));
-    }
-
     List<Pair<IEffect, EffectData>> effects = new LinkedList<>();
-    List<EffectWrapper> wrappers = new LinkedList<>();
+    //List<EffectWrapper> wrappers = new LinkedList<>();
 
 
 
@@ -96,9 +79,11 @@ public class ObjectSprite {
         effects.add(new Pair<>(Palette.getEffect(effect), new EffectData(new Interval(wait, interval, natural), parameters)));
     }
 
+    /*
     public void addWrapper(EffectWrapper wrapper) {
         wrappers.add(wrapper);
     }
+    */
 
     public Point getPosition() {
         return position;
@@ -106,9 +91,11 @@ public class ObjectSprite {
 
     public void setCurrentImagePosition(int n) {
         currentImagePosition = n;
+        //System.out.println("set: " + n);
     }
 
     public int getCurrentImagePosition() {
+        //System.out.println("get: " + currentImagePosition);
         return currentImagePosition;
     }
 
@@ -134,13 +121,20 @@ public class ObjectSprite {
             if(y2 < y3) {
                 y2 = y3;
             }
+            //System.out.println(x3 + ", " + y3);
         }
 
-        setPosition((int)Math.round((x + x2) / 2), (int)Math.round((y + y2) / 2));
-        System.out.println(position);
+        //250 - 308/2
+
+        setPosition((int)Math.round((x - x2/2)), (int)Math.round((y - y2/2)));
+        //System.out.println(position);
     }
 
-    private static BufferedImage getImage(File file) {
+    public static BufferedImage getImage(String route) {
+        return getImage(new File(route));
+    }
+
+    public static BufferedImage getImage(File file) {
         try {
             return ImageIO.read(file);
         } catch(Exception ex) {
@@ -156,7 +150,9 @@ public class ObjectSprite {
     }
 
     public BufferedImage getCurrentImage() {
-        return images.get(getCurrentImagePosition());
+
+        //System.out.println(currentImagePosition);
+        return images.get(currentImagePosition);
     }
 
     public void addImage(BufferedImage image) {
@@ -175,6 +171,10 @@ public class ObjectSprite {
         addImage(new File(route));
     }
 
+    public void addImage(Font font, String text, Color color) {
+        addImage(makeImageFromText(font, text, color));
+    }
+
     private static BufferedImage defaultImage = new BufferedImage(1,1, BufferedImage.TYPE_INT_ARGB);
     private static Graphics2D defaultGraphics2D = (Graphics2D) defaultImage.getGraphics();
 
@@ -187,7 +187,7 @@ public class ObjectSprite {
     public static BufferedImage makeImageFromText(Font font, String text, Color color) {
         Point size = getTextSize(font, text);
 
-        BufferedImage image = new BufferedImage(size.getXInt(), size.getYInt()*2, BufferedImage.TYPE_INT_ARGB);
+        BufferedImage image = new BufferedImage(size.getXInt(), (int) (size.getYInt()*1.25), BufferedImage.TYPE_INT_ARGB);
         Graphics g = image.getGraphics();
         g.setColor(color);
         g.setFont(font);
